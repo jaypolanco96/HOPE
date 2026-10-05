@@ -7,6 +7,13 @@
 #include <iomanip>
 #include <sstream>
 #include <string_view>
+#include <atomic>
+#include <chrono>
+#if defined(_WIN32)
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <Windows.h>
+#endif
 
 #include <rex/cvar.h>
 
@@ -72,7 +79,14 @@ std::string TomlString(std::string_view value) {
     if (c == '\\' || c == '"') {
       out.push_back('\\');
     }
-    out.push_back(c);
+    if (static_cast<unsigned char>(c) < 32 || c == 127) {
+      constexpr char hex[] = "0123456789ABCDEF";
+      out += "\\u00";
+      out.push_back(hex[(static_cast<unsigned char>(c) >> 4) & 15]);
+      out.push_back(hex[static_cast<unsigned char>(c) & 15]);
+    } else {
+      out.push_back(c);
+    }
   }
   out.push_back('"');
   return out;
@@ -117,12 +131,29 @@ LocalProfileStore LoadProfiles(const std::filesystem::path& profiles_path) {
 
 bool SaveProfiles(const std::filesystem::path& profiles_path, const LocalProfileStore& store) {
   std::error_code ec;
+  // Do not silently replace an unreadable or malformed existing profile file
+  // with a fallback Player profile. Preserve it for recovery.
+  if (std::filesystem::exists(profiles_path, ec)) {
+    try { (void)toml::parse_file(profiles_path.string()); }
+    catch (const toml::parse_error&) { return false; }
+  }
+  if (ec) return false;
   std::filesystem::create_directories(profiles_path.parent_path(), ec);
   if (ec) {
     return false;
   }
 
-  std::ofstream file(profiles_path, std::ios::trunc);
+  // Stage a unique sibling. Failed writes/replacements leave the old profile
+  // intact, and callers must not apply unsaved profile changes.
+  static std::atomic<uint64_t> sequence{0};
+  auto temporary = profiles_path;
+  temporary += "." + std::to_string(std::chrono::steady_clock::now().time_since_epoch().count()) +
+               "." + std::to_string(sequence.fetch_add(1)) + ".tmp";
+  struct Cleanup {
+    std::filesystem::path path;
+    ~Cleanup() { std::error_code ignored; std::filesystem::remove(path, ignored); }
+  } cleanup{temporary};
+  std::ofstream file(temporary, std::ios::binary | std::ios::trunc);
   if (!file) {
     return false;
   }
@@ -136,7 +167,24 @@ bool SaveProfiles(const std::filesystem::path& profiles_path, const LocalProfile
     file << "signed_in = " << (profile.signed_in ? "true" : "false") << "\n";
     file << "live_signed_in = " << (profile.live_signed_in ? "true" : "false") << "\n\n";
   }
-  return true;
+  file.flush();
+  if (!file) return false;
+  file.close();
+  if (!file) return false;
+#if defined(_WIN32)
+  // Flush the staged bytes before replacing the name on the same volume.
+  HANDLE staged = CreateFileW(temporary.c_str(), GENERIC_WRITE, FILE_SHARE_READ,
+                              nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+  if (staged == INVALID_HANDLE_VALUE) return false;
+  const bool flushed = FlushFileBuffers(staged) != 0;
+  CloseHandle(staged);
+  if (!flushed) return false;
+  return MoveFileExW(temporary.c_str(), profiles_path.c_str(),
+                     MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH) != 0;
+#else
+  std::filesystem::rename(temporary, profiles_path, ec);
+  return !ec;
+#endif
 }
 
 LocalProfile MakeDefaultProfile(std::string gamertag) {
@@ -179,7 +227,8 @@ void EnsureUsableProfileStore(LocalProfileStore& store, std::string default_game
     store.profiles.push_back(std::move(profile));
     return;
   }
-  if (!FindSelectedProfile(store)) {
+  if (std::none_of(store.profiles.begin(), store.profiles.end(),
+      [&](const LocalProfile& profile) { return profile.id == store.selected_profile; })) {
     store.selected_profile = store.profiles.front().id;
   }
 }

@@ -597,7 +597,9 @@ std::optional<rex::PathConfig> Skate3BaseApp::OnFinalizePaths(
   const bool has_config_file = std::filesystem::exists(defaults.config_path);
   const bool has_game_path = std::filesystem::is_directory(defaults.game_data_root);
   if (!has_profiles_file && has_config_file && has_game_path) {
-    skate3::SaveProfiles(profiles_path_, profiles);
+    if (!skate3::SaveProfiles(profiles_path_, profiles)) {
+      REXLOG_ERROR("HOPE could not persist the initial profile at {}", profiles_path_.string());
+    }
   }
   auto runtime_paths = defaults;
   runtime_paths.game_data_root = ResolveRuntimeGameDataRoot(runtime_paths);
@@ -873,11 +875,11 @@ void Skate3BaseApp::ToggleSimpleSettings() {
     }
     return state;
   };
-  auto save_profile = [this](int selected_index, std::string gamertag, bool signed_in) {
+  auto save_profile = [this](int selected_index, std::string gamertag, bool signed_in) -> std::string {
     auto store = skate3::LoadProfiles(profiles_path_);
     skate3::EnsureUsableProfileStore(store, "Player");
     if (store.profiles.empty()) {
-      return;
+      return "No usable profile is available. Your changes were not applied.";
     }
     selected_index = std::clamp(selected_index, 0, static_cast<int>(store.profiles.size()) - 1);
     auto& profile = store.profiles[selected_index];
@@ -889,10 +891,14 @@ void Skate3BaseApp::ToggleSimpleSettings() {
       profile.live_signed_in = false;
     }
     store.selected_profile = profile.id;
-    skate3::SaveProfiles(profiles_path_, store);
+    if (!skate3::SaveProfiles(profiles_path_, store)) {
+      REXLOG_ERROR("HOPE could not save profile changes at {}", profiles_path_.string());
+      return "Profile changes were not saved or applied. Check free disk space and folder permissions. If profiles.toml is damaged, preserve a copy before repairing it.";
+    }
     skate3::ApplyProfileCvars(profile);
     ApplyDemoPathProfileOverride();
     ApplySelectedProfileToRuntime();
+    return {};
   };
   // Fires on every Hide (B/Esc, Close Settings, Close Game), the one spot
   // that reliably sees the menu close regardless of who initiated it.

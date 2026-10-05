@@ -410,6 +410,11 @@ else()
 endif()
 
 if(WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    add_executable(skate3_profile_reliability_test EXCLUDE_FROM_ALL
+        phase2/tests/profile_reliability_test.cpp src/skate3_user_settings.cpp)
+    target_include_directories(skate3_profile_reliability_test PRIVATE src)
+    target_compile_features(skate3_profile_reliability_test PRIVATE cxx_std_23)
+    target_link_libraries(skate3_profile_reliability_test PRIVATE rex::runtime)
     add_executable(skate3_save_manager_test EXCLUDE_FROM_ALL
         phase1/tests/save_manager_test.cpp src/skate3_save_manager.cpp)
     target_compile_features(skate3_save_manager_test PRIVATE cxx_std_23)

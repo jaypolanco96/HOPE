@@ -18,6 +18,7 @@ public partial class MainWindow : Window, IDisposable
     private readonly ControllerNavigation controller;
     private readonly List<string> photos = [];
     private int photoIndex;
+    private string? photoWarning;
     private SaveEntry? pendingRemoval;
     private string page = "Home";
     private bool loading;
@@ -35,7 +36,7 @@ public partial class MainWindow : Window, IDisposable
         LoadGraphics();
         Navigate("Home");
         RefreshStatus();
-        if (state.PreferencesWarning is { } warning) Feedback.Text = warning;
+        if ((state.PreferencesWarning ?? photoWarning) is { } warning) Feedback.Text = warning;
         monitor = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
         monitor.Tick += (_, _) => RefreshStatus();
         monitor.Start();
@@ -223,8 +224,7 @@ public partial class MainWindow : Window, IDisposable
     {
         var picker = new OpenFileDialog { Title = "Choose a gameplay screenshot", Filter = "Gameplay images|*.jpg;*.jpeg;*.png", CheckFileExists = true };
         if (picker.ShowDialog(this) != true) return;
-        var image = new BitmapImage();
-        image.BeginInit(); image.CacheOption = BitmapCacheOption.OnLoad; image.UriSource = new Uri(picker.FileName); image.EndInit();
+        var image = ReadPhoto(picker.FileName);
         if (image.PixelWidth < 1280 || image.PixelHeight < 720) throw new IOException("Choose an HD screenshot at least 1280 × 720.");
         state.Preferences.PhotoPath = picker.FileName;
         state.Preferences.PhotoIndex = 0;
@@ -236,11 +236,39 @@ public partial class MainWindow : Window, IDisposable
     });
     private void LoadPhoto()
     {
-        if (photos.Count == 0) { PhotoCaption.Text = "YOUR GAMEPLAY PHOTO GOES HERE"; return; }
+        while (photos.Count > 0)
+        {
+            photoIndex = Math.Clamp(photoIndex, 0, photos.Count - 1);
+            try
+            {
+                var image = ReadPhoto(photos[photoIndex]);
+                Backdrop.Source = image;
+                PhotoCaption.Text = $"{photoIndex + 1:00} / {photos.Count:00}   •   SKATE 3 STREET FLIGHT";
+                return;
+            }
+            catch (Exception error) when (error is IOException or FileFormatException or NotSupportedException or ArgumentException)
+            {
+                // A missing or damaged optional photo must not block Play or saves.
+                photos.RemoveAt(photoIndex);
+                photoWarning = "A background image could not be read. Choose another HD screenshot in Game setup.";
+                Feedback.Text = photoWarning;
+            }
+        }
+        Backdrop.Source = null;
+        PhotoCaption.Text = "CHOOSE YOUR HD GAMEPLAY PHOTO IN GAME SETUP";
+    }
+    private static BitmapImage ReadPhoto(string path)
+    {
+        // Own the stream explicitly: failed URI-based decoding can retain a
+        // file handle, preventing the player from replacing a damaged image.
+        using var stream = File.OpenRead(path);
         var image = new BitmapImage();
-        image.BeginInit(); image.CacheOption = BitmapCacheOption.OnLoad; image.UriSource = new Uri(photos[photoIndex]); image.EndInit(); image.Freeze();
-        Backdrop.Source = image;
-        PhotoCaption.Text = $"{photoIndex + 1:00} / {photos.Count:00}   •   SKATE 3 STREET FLIGHT";
+        image.BeginInit();
+        image.CacheOption = BitmapCacheOption.OnLoad;
+        image.StreamSource = stream;
+        image.EndInit();
+        image.Freeze();
+        return image;
     }
     private void StepPhoto(int step)
     {
@@ -287,4 +315,3 @@ public partial class MainWindow : Window, IDisposable
         });
     }
 }
-

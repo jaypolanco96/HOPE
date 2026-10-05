@@ -1,0 +1,10 @@
+id,severity,status,issue,evidence,next_step
+P2-001,High,Fixed and fixture-tested,Profile overwrite can lose metadata on interrupted write,SaveProfiles truncated live file and ignored stream completion,Live profile/save-reload checks
+P2-002,High,Fixed and fixture-tested,Failed profile save still applied to runtime,SaveProfile callback ignored false return and had no failure feedback,Verify in-game error and no profile switch on denied write
+P2-003,Medium,Fixed and fixture-tested,Control characters create unreadable profile TOML,TomlString escaped only quotes and backslashes,Existing profile compatibility soak
+P2-004,Medium,Fixed and fixture-tested,Invalid selected profile ID remains inconsistent,EnsureUsableProfileStore used a lookup that always fell back,Multi-profile live selection
+P2-005,High,Open,Difficulty selection intermittently blank,Player controller report and frontend transitions,Paired controller reproduction plus 30 clean setup runs
+P2-006,Medium,Investigating,Invalid heap release at shutdown,Four recorded errors 196-288ms after closing marker,Collect enriched address/region diagnostics and ownership trace
+P2-007,Unclassified,Open,Missing VFS requests,Session logs contain patch/debug/stategraph/save requests,Verify callers and fallbacks before changing resources
+P2-008,Medium,Fixed and fixture-tested,Damaged background prevents launcher startup,Optional image decoded in constructor and exception escaped,Runtime launcher navigation with damaged and valid images
+P2-009,Medium,Fixed and fixture-tested,Failed image decoding can keep file locked,First corruption fixture failed cleanup with retained URI handle,Explicit disposed stream and recovery advice

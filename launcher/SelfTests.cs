@@ -26,6 +26,16 @@ internal static class SelfTests
             SettingsFile.Update(settings, new Dictionary<string, string> { ["game_data_root"] = JsonSerializer.Serialize(quotedPath) });
             Check(SettingsFile.StringValue(SettingsFile.Read(settings, "game_data_root", "")) == quotedPath, "Quoted path and hash character preserved");
             File.WriteAllText(Path.Combine(root, "portable.txt"), "");
+            var badPhoto = Path.Combine(root, "assets", "gameplay", "broken.jpg");
+            Write(badPhoto, "damaged optional photo");
+            using (var window = new MainWindow(root))
+            {
+                Check(window.Backdrop.Source == null, "Damaged optional photo does not block launcher startup");
+                Check(window.Feedback.Text.Contains("background image"), "Damaged photo shows recovery advice");
+                window.Navigate("Graphics");
+                Check(window.GraphicsPanel.Visibility == System.Windows.Visibility.Visible, "Settings remain available without artwork");
+            }
+            Check(File.ReadAllText(badPhoto) == "damaged optional photo", "Damaged photo retained for recovery");
             var packages = Path.Combine(root, "B13E000000000001", "454108E6", "00000001");
             var headers = Path.Combine(root, "B13E000000000001", "454108E6", "Headers", "00000001");
             Write(Path.Combine(packages, "ALIAS_SKATER", "SKATER.P"), "current career");
