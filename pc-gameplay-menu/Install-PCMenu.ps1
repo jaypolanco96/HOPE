@@ -54,37 +54,77 @@ foreach ($root in $roots) {
     foreach ($name in $names) {
         $path = Join-Path $root $name
         Assert-OrdinaryPath $path
-        $operations += [pscustomobject]@{ path=$path; name=$name; existed=(Test-Path -LiteralPath $path); backup='' }
+        $operations += [pscustomobject]@{ path=$path; name=$name; existed=(Test-Path -LiteralPath $path); backup=''; stream=$null; originalHash='' }
     }
 }
-$backup = Join-Path $Target ('updates\pc-menu-' + [guid]::NewGuid().ToString('D'))
+function Hash-Stream($Stream) {
+    $Stream.Position = 0
+    $sha = [Security.Cryptography.SHA256]::Create()
+    try { return [BitConverter]::ToString($sha.ComputeHash($Stream)).Replace('-', '') }
+    finally { $sha.Dispose() }
+}
+$backup = Join-Path $Target ('updates\hope-update-' + [guid]::NewGuid().ToString('D'))
 Assert-OrdinaryPath $backup
-New-Item -ItemType Directory -Path $backup | Out-Null
-for ($i=0; $i -lt $operations.Count; $i++) {
-    $operation = $operations[$i]
-    $operation.backup = Join-Path $backup ($i.ToString() + '-' + $operation.name)
-    if ($operation.existed) {
-        Copy-Item -LiteralPath $operation.path -Destination $operation.backup
-        if ((Get-FileHash -LiteralPath $operation.path).Hash -ne (Get-FileHash -LiteralPath $operation.backup).Hash) {
-            throw 'Backup verification failed; installation has not begun.'
+$opened = @()
+$changed = @()
+$success = $false
+try {
+    # Acquire every destination before backing up or changing any existing bytes.
+    # Keep these exclusive handles until verification/rollback is finished.
+    foreach ($operation in $operations) {
+        $mode = if ($operation.existed) { [IO.FileMode]::Open } else { [IO.FileMode]::CreateNew }
+        $operation.stream = [IO.File]::Open($operation.path, $mode, [IO.FileAccess]::ReadWrite, [IO.FileShare]::None)
+        $opened += $operation
+    }
+    New-Item -ItemType Directory -Path $backup | Out-Null
+    for ($i=0; $i -lt $operations.Count; $i++) {
+        $operation = $operations[$i]
+        $operation.backup = Join-Path $backup ($i.ToString() + '-' + $operation.name)
+        if ($operation.existed) {
+            $operation.originalHash = Hash-Stream $operation.stream
+            $operation.stream.Position = 0
+            $output = [IO.File]::Open($operation.backup, [IO.FileMode]::CreateNew, [IO.FileAccess]::Write, [IO.FileShare]::None)
+            try { $operation.stream.CopyTo($output); $output.Flush($true) } finally { $output.Dispose() }
+            if ((Get-FileHash -LiteralPath $operation.backup).Hash -ne $operation.originalHash) {
+                throw 'Backup verification failed; installation has not begun.'
+            }
+        }
+    }
+    $operations | Select-Object path,name,existed,backup,originalHash | ConvertTo-Json |
+        Set-Content -LiteralPath (Join-Path $backup 'restore-map.json')
+    if (Get-Process skate3 -ErrorAction SilentlyContinue) { throw 'Skate 3 started; installation has not begun.' }
+    foreach ($operation in $operations) {
+        $changed += $operation
+        $operation.stream.Position = 0
+        $operation.stream.SetLength(0)
+        $inputFile = [IO.File]::OpenRead((Join-Path $payload $operation.name))
+        try { $inputFile.CopyTo($operation.stream); $operation.stream.Flush($true) } finally { $inputFile.Dispose() }
+        $expected = ($manifest.files | Where-Object name -eq $operation.name).sha256
+        if ((Hash-Stream $operation.stream) -ne $expected) { throw 'Installed checksum mismatch.' }
+    }
+    $success = $true
+} catch {
+    $problem = $_
+    $rollbackErrors = @()
+    foreach ($operation in $changed) {
+        if ($operation.existed) {
+            try {
+                $operation.stream.Position = 0
+                $operation.stream.SetLength(0)
+                $inputFile = [IO.File]::OpenRead($operation.backup)
+                try { $inputFile.CopyTo($operation.stream); $operation.stream.Flush($true) } finally { $inputFile.Dispose() }
+                if ((Hash-Stream $operation.stream) -ne $operation.originalHash) { throw 'Restored checksum mismatch.' }
+            } catch { $rollbackErrors += $operation.path }
+        }
+    }
+    if ($rollbackErrors.Count) { throw "Update failed and some program files could not be restored: $($rollbackErrors -join ', '). Backups: $backup" }
+    throw "Update could not be installed: $($problem.Exception.Message) Close HOPE and Skate 3 before retrying. Existing-file rollback was verified."
+} finally {
+    foreach ($operation in $opened) { $operation.stream.Dispose() }
+    if (!$success) {
+        foreach ($operation in $opened) {
+            if (!$operation.existed -and (Test-Path -LiteralPath $operation.path)) { Remove-Item -LiteralPath $operation.path }
         }
     }
 }
-$operations | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $backup 'restore-map.json')
-if (Get-Process skate3 -ErrorAction SilentlyContinue) { throw 'Skate 3 started; installation has not begun.' }
-$changed = @()
-try {
-    foreach ($operation in $operations) {
-        $changed += $operation
-        Copy-Item -LiteralPath (Join-Path $payload $operation.name) -Destination $operation.path -Force
-        $expected = ($manifest.files | Where-Object name -eq $operation.name).sha256
-        if ((Get-FileHash -LiteralPath $operation.path).Hash -ne $expected) { throw 'Installed checksum mismatch.' }
-    }
-} catch {
-    foreach ($operation in $changed) {
-        if ($operation.existed) { Copy-Item -LiteralPath $operation.backup -Destination $operation.path -Force }
-        elseif (Test-Path -LiteralPath $operation.path) { Remove-Item -LiteralPath $operation.path }
-    }
-    throw
-}
-Write-Output "PC gameplay menu installed in $Target. Existing saves/settings were untouched. Program backups: $backup"
+Write-Output "HOPE update installed in $Target. Existing saves/settings were untouched. Program backups: $backup"

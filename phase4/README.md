@@ -42,3 +42,5 @@ Earlier automatic approval review rejected native game UI access. This checkpoin
 ## Verification
 
 `skate3_frame_capture_test` verifies initial baselines, monotonic timestamps, context/renderer transitions, sample/time bounds, default-off behavior, write-failure retention/retry, schema preservation, concurrent stop and distinct output files using disposable directories. `python -m unittest discover -s phase4/tests -p 'test_*.py' -v` verifies percentile/slowest-1% definitions, grouping/transition exclusion and invalid/empty/aggregate input handling. Original-menu, profile, save and graphics checks remain part of the native build verification; launcher fixture checks remain required.
+
+Updater verification: 31 disposable checks pass, including exclusive destination-file lock refusal before changes, cleanup of newly created files after a refused update, complete root/career updates, verified backups, preserved save/settings bytes and corrupted-payload refusal. Every destination stays exclusively held until install verification or rollback completes. Close both HOPE and Skate 3 before updating.
