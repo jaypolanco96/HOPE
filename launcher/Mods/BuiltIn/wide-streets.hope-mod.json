@@ -1,0 +1,10 @@
+{
+  "formatVersion": 1,
+  "id": "wide-streets",
+  "name": "Wide Streets",
+  "author": "HOPE",
+  "description": "A wider 75\u00b0 camera view for spotting street lines.",
+  "settings": {
+    "skate3_field_of_view": 75
+  }
+}

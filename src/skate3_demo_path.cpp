@@ -45,6 +45,8 @@ REXCVAR_DEFINE_INT32(skate3_demo_path_input_settle_ms, 2500, "Skate 3",
 REXCVAR_DEFINE_INT32(skate3_demo_path_input_delay_ms, 600, "Skate 3",
                      "Demo path: delay between injected gameplay inputs")
     .range(50, 10000);
+REXCVAR_DEFINE_BOOL(skate3_frontend_movies_auto_skip, false, "Skate 3",
+                    "Automatically skip frontend movies (HOPE No Intro Videos mod)");
 REXCVAR_DEFINE_BOOL(skate3_intro_movie_skip, true, "Skate 3",
                     "Skip the frontend intro movie when A or Start is pressed "
                     "(the default keyboard bindings make that Space and Enter)");
@@ -425,6 +427,7 @@ void SetUiInputProvider(std::function<rex::input::InputSystem*()> provider) {
 }
 
 bool ShouldForceIntroMovieComplete() {
+  if (REXCVAR_GET(skate3_frontend_movies_auto_skip)) return true;
   if (AutomationEnabled() && g_skip_intro_movie.load(std::memory_order_relaxed)) {
     bool expected = false;
     if (g_logged_intro_movie_skip.compare_exchange_strong(expected, true,

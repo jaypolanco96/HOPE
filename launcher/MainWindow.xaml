@@ -25,10 +25,11 @@
       <StackPanel Grid.Row="1">
        <Button x:Name="HomeNav" Style="{StaticResource Nav}" Content="01   Home" Tag="Home" Click="Navigate_Click"/>
        <Button x:Name="GraphicsNav" Style="{StaticResource Nav}" Content="02   Graphics" Tag="Graphics" Click="Navigate_Click"/>
-       <Button x:Name="SavesNav" Style="{StaticResource Nav}" Content="03   My saves" Tag="Saves" Click="Navigate_Click"/>
-       <Button x:Name="SetupNav" Style="{StaticResource Nav}" Content="04   Game setup" Tag="Setup" Click="Navigate_Click"/>
-       <Button x:Name="HelpNav" Style="{StaticResource Nav}" Content="05   Help &amp; recovery" Tag="Help" Click="Navigate_Click" FontSize="15"/>
-       <Button x:Name="CreditsNav" Style="{StaticResource Nav}" Content="06   Credits" Tag="Credits" Click="Navigate_Click"/>
+       <Button x:Name="ModsNav" Style="{StaticResource Nav}" Content="03   Mods" Tag="Mods" Click="Navigate_Click"/>
+       <Button x:Name="SavesNav" Style="{StaticResource Nav}" Content="04   My saves" Tag="Saves" Click="Navigate_Click"/>
+       <Button x:Name="SetupNav" Style="{StaticResource Nav}" Content="05   Game setup" Tag="Setup" Click="Navigate_Click"/>
+       <Button x:Name="HelpNav" Style="{StaticResource Nav}" Content="06   Help &amp; recovery" Tag="Help" Click="Navigate_Click" FontSize="15"/>
+       <Button x:Name="CreditsNav" Style="{StaticResource Nav}" Content="07   Credits" Tag="Credits" Click="Navigate_Click"/>
       </StackPanel>
       <StackPanel Grid.Row="2" VerticalAlignment="Bottom">
        <TextBlock Text="FROM THE BAY, WITH LOVE." FontSize="11" Foreground="{StaticResource Pink}" FontWeight="Bold" Margin="4,0,0,10"/>
@@ -120,6 +121,17 @@
           </WrapPanel>
           <TextBlock Text="Native effects are available with the Native renderer. Higher resolution, MSAA and AO quality use more GPU resources. Fog, haze and shafts are independent." TextWrapping="Wrap" Foreground="#C8BED9" FontSize="14" Margin="0,16,0,20"/>
           <Button x:Name="SaveGraphicsButton" Content="Save graphics settings" Style="{StaticResource Primary}" HorizontalAlignment="Left" Click="SaveGraphics_Click"/>
+         </StackPanel>
+         <StackPanel x:Name="ModsPanel" Visibility="Collapsed">
+          <WrapPanel><Button Content="Import mod…" Click="ImportMod_Click" Margin="0,0,12,12"/><Button x:Name="ApplyModsButton" Content="Apply selected mods" Style="{StaticResource Primary}" Click="ApplyMods_Click" Padding="20,14" FontSize="18" Margin="0,0,12,12"/><Button x:Name="DisableModsButton" Content="Disable all" Click="DisableMods_Click"/></WrapPanel>
+          <TextBlock x:Name="ModsStatus" Foreground="{StaticResource Mint}" TextWrapping="Wrap" Margin="0,0,0,12"/>
+          <ItemsControl x:Name="ModList"><ItemsControl.ItemTemplate><DataTemplate>
+            <Border CornerRadius="18" Background="#30243F" BorderBrush="#786397" BorderThickness="1" Padding="18,10" Margin="0,0,0,12"><StackPanel>
+             <CheckBox Content="{Binding Name}" IsChecked="{Binding Enabled, Mode=TwoWay}" Foreground="{StaticResource Lime}" FontWeight="Bold"/>
+             <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Foreground="#F1EAF7"/><TextBlock Text="{Binding Credit}" FontSize="12" Foreground="{StaticResource Mint}" Margin="0,8,0,0"/>
+            </StackPanel></Border>
+          </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+          <TextBlock Text="Import HOPE settings mods (.hope-mod.json). DLLs, ZIPs and replacement game files are not supported here. Disabling restores previous values and keeps later manual edits. Graphics mods require the Native renderer." TextWrapping="Wrap" FontSize="14" Foreground="#C8BED9"/>
          </StackPanel>
          <StackPanel x:Name="SavesPanel" Visibility="Collapsed">
           <ListBox x:Name="SaveList" Background="#291F3E" Foreground="#F5F1FF" BorderBrush="#786397" FontSize="18" MinHeight="130" MaxHeight="200" Padding="12" Margin="0,0,0,18"/>

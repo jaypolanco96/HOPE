@@ -143,6 +143,7 @@ internal static class SelfTests
                 catch (IOException) { rejected = true; }
                 Check(rejected && File.ReadAllText(Path.Combine(linkFixture, "outside", "SKATER.P")) == "outside fixture", "Settings reset rejects linked source without modifying target");
             }
+            ModTests.Run(Path.Combine(root, "mods-tests"), Check);
             QoLTests.Run(Path.Combine(root, "qol"), Check);
             return $"Passed {checks} HOPE launcher fixture checks. No game was launched; no real saves were modified.\n";
         }

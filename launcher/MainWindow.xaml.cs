@@ -66,7 +66,7 @@ public partial class MainWindow : Window, IDisposable
         pendingRemoval = null;
         DeleteConfirm.Visibility = Visibility.Collapsed;
         page = destination;
-        foreach (var nav in new[] { HomeNav, GraphicsNav, SavesNav, SetupNav, HelpNav, CreditsNav })
+        foreach (var nav in new[] { HomeNav, GraphicsNav, ModsNav, SavesNav, SetupNav, HelpNav, CreditsNav })
         {
             bool active = (string)nav.Tag == destination;
             nav.Foreground = (Brush)FindResource(active ? "Lime" : "Mint");
@@ -75,6 +75,7 @@ public partial class MainWindow : Window, IDisposable
         HomePage.Visibility = destination == "Home" ? Visibility.Visible : Visibility.Collapsed;
         DetailsPage.Visibility = destination == "Home" ? Visibility.Collapsed : Visibility.Visible;
         GraphicsPanel.Visibility = destination == "Graphics" ? Visibility.Visible : Visibility.Collapsed;
+        ModsPanel.Visibility = destination == "Mods" ? Visibility.Visible : Visibility.Collapsed;
         SavesPanel.Visibility = destination == "Saves" ? Visibility.Visible : Visibility.Collapsed;
         SetupPanel.Visibility = destination == "Setup" ? Visibility.Visible : Visibility.Collapsed;
         HelpPanel.Visibility = destination == "Help" ? Visibility.Visible : Visibility.Collapsed;
@@ -82,12 +83,14 @@ public partial class MainWindow : Window, IDisposable
         (PageTitle.Text, PageIntro.Text) = destination switch
         {
             "Graphics" => ("MAKE IT YOURS.", "Set up your next session. Close the game before saving changes here; use the in-game Graphics page for live adjustments."),
+            "Mods" => ("REMIX YOUR RIDE.", "Choose mods, then apply. Changes take effect next launch, for the selected career only. All five built-ins start disabled."),
             "Saves" => ("YOUR LINES LIVE HERE.", "Manage career saves across the profiles in this installation. Every removal keeps a recovery copy."),
             "Setup" => ("BRING YOUR BOARD.", "You provide the game. HOPE brings the PC interface. No ISO downloads or retail game files are included."),
             "Help" => ("BACK ON YOUR FEET.", "Controls, settings recovery and your selected career folder, all in one place."),
             "Credits" => ("RESPECT THE ROOTS.", "HOPE stands on the work of the original Skate3Recomp creator and the wider recompilation community."),
             _ => ("HOPE", "Hills, Ollies, Pavement, Expression")
         };
+        if (destination == "Mods") RefreshMods();
         if (destination == "Saves") RefreshSaves();
         if (destination == "Graphics") LoadGraphics();
         if (destination == "Setup") IsoLabel.Text = state.HasIso ? Path.GetFileName(state.Preferences.IsoPath) : "No ISO selected";
@@ -123,6 +126,7 @@ public partial class MainWindow : Window, IDisposable
             if (lastRunning && !running) Navigate("Home");
             GraphicsForm.IsEnabled = !running;
             SaveGraphicsButton.IsEnabled = !running;
+            ApplyModsButton.IsEnabled = DisableModsButton.IsEnabled = !running;
             FullscreenCheck.IsEnabled = VsyncCheck.IsEnabled = FpsCheck.IsEnabled = !running;
             ResetSettingsButton.IsEnabled = !running;
             RestoreSettingsButton.IsEnabled = !running && BackupCombo.Items.Count > 0;
@@ -160,6 +164,7 @@ public partial class MainWindow : Window, IDisposable
         Run(() =>
         {
             state.SelectCareer(choice.Id);
+            if (page == "Mods") RefreshMods();
             LoadGraphics();
             RefreshStatus();
             Feedback.Text = "Career selected. Play continues this career; other careers stay separate.";
@@ -281,6 +286,27 @@ public partial class MainWindow : Window, IDisposable
             ["fullscreen"] = Flag(FullscreenCheck), ["vsync"] = Flag(VsyncCheck), ["show_fps_counter"] = Flag(FpsCheck)
         });
         Feedback.Text = "Graphics saved. Your next session will use these settings.";
+    });
+
+    private ModManager Mods() => new(state.BundleRoot, state.ActiveRoot, () => state.IsGameRunning());
+    private void RefreshMods()
+    {
+        var manager = Mods(); ModList.ItemsSource = manager.List();
+        ModsStatus.Text = manager.Warning.Length > 0 ? manager.Warning : "Tick your choices, then Apply. Imports join the library and start disabled.";
+    }
+    private void ImportMod_Click(object sender, RoutedEventArgs e) => Run(() =>
+    {
+        var picker = new OpenFileDialog { Title = "Import a HOPE settings mod", Filter = "HOPE settings mod (*.hope-mod.json)|*.hope-mod.json", CheckFileExists = true };
+        if (picker.ShowDialog(this) != true) return;
+        var name = Mods().Import(picker.FileName); RefreshMods(); Feedback.Text = name + " imported. Tick it and Apply to enable it.";
+    });
+    private void ApplyMods_Click(object sender, RoutedEventArgs e) => Run(() =>
+    {
+        RequireGameClosed(); Feedback.Text = Mods().Apply(ModList.Items.Cast<ModChoice>().Where(m => m.Enabled).Select(m => m.Definition.Id)); RefreshMods(); LoadGraphics();
+    });
+    private void DisableMods_Click(object sender, RoutedEventArgs e) => Run(() =>
+    {
+        RequireGameClosed(); Feedback.Text = Mods().Apply([]); RefreshMods(); LoadGraphics();
     });
 
     private void RefreshSaves()

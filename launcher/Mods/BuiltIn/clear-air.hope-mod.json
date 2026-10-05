@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "id": "clear-air",
+  "name": "Clear Air",
+  "author": "HOPE",
+  "description": "Removes distance fog, atmospheric haze and sun shafts. Native renderer only.",
+  "settings": {
+    "skate3_native_render_scene_fog": false,
+    "skate3_native_render_scene_haze": false,
+    "skate3_native_render_scene_shafts": false
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "formatVersion": 1,
+  "id": "no-intro-videos",
+  "name": "No Intro Videos",
+  "author": "HOPE",
+  "description": "Automatically skips frontend intro and attract videos. First-time difficulty and camera setup remain available.",
+  "settings": {
+    "skate3_frontend_movies_auto_skip": true
+  }
+}

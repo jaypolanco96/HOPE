@@ -1,0 +1,10 @@
+{
+  "formatVersion": 1,
+  "id": "clean-lens",
+  "name": "Clean Lens",
+  "author": "HOPE",
+  "description": "Turns off bloom for a cleaner image. Native renderer only.",
+  "settings": {
+    "skate3_native_render_scene_bloom": false
+  }
+}
