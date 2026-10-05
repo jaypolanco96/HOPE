@@ -19,7 +19,7 @@ Player reports controller input. Audio/background behavior and exact selections 
 ## Initial findings
 
 - Original logs have no enabled frontend state probe, so they cannot identify the failing transition.
-- Two sessions contain a BaseHeap::Release error; this may be shutdown-related and is not established as the cause.
+- All three completed sessions contain a BaseHeap::Release error after window shutdown and execution completion. This is a cleanup-defect lead and is deprioritized as the immediate blank-screen cause.
 - Native renderer code explicitly handles multiple camera-selection preview videos. This makes video/UI resource handling worth checking, but it is not evidence of a defect.
 - An existing F5 toggle switches Native/Emulated rendering. Use it on the failing screen to distinguish missing drawing from missing menu state.
 - Existing `skate3_demo_path_probe` logs frontend state requests without automating input. Keep `skate3_demo_path = false`.
@@ -30,7 +30,7 @@ The frontend state probe now logs paired begin/returned events with a sequence n
 
 ## Isolated reproduction
 
-Run `phase1/Prepare-TestSession.ps1` from PowerShell. Parameters: `-Profile Saved|Fresh` and `-Renderer Native|Emulated`. Each invocation creates a separate portable session using baseline binaries/settings and, for Saved, a copy of the saved profile. Shared installed game data is referenced without copying it. Do not run two sessions simultaneously. The helper prepares a session; it does not launch the game.
+Run `phase1/Prepare-TestSession.ps1` from PowerShell. Parameters: `-Profile Saved|Fresh`, `-Renderer Native|Emulated`, `-Build Installed|Diagnostic`, and `-InputMethod Controller|Keyboard`. Defaults use the installed baseline and controller. Diagnostic sessions require a completed build in `out/build/phase1`. Each invocation creates a separate portable session using copied binaries/settings and, for Saved, a copy of the saved profile. Binary hashes and input method are recorded in the session manifest. Shared installed game data is referenced without copying it. Do not run two sessions simultaneously. The helper prepares a session; it does not launch the game.
 
 1. Launch the session executable and verify its log reports the session directory as User data and the installed game directory as the game path. Verify frontend probe hooks are installed.
 2. With the controller, reproduce setup using deliberate single presses. Record selected difficulty/camera, screen sequence, time, whether sound/background continues, and whether Back or navigation responds.
@@ -42,10 +42,10 @@ Record every attempt in `REPRODUCTION.csv`; use `not_run` until actually tested.
 
 ## Build readiness
 
-CMake and Ninja are available. Initial configure failed because no C++ compiler could be found. LLVM/Clang 18+ and the Windows SDK/build environment need to be located or provisioned before a diagnostic build can be produced. TU3 code generation also needs the title-update package; installed `.xexp` files alone do not establish that the original package is available. Follow upstream README instructions and keep build output separate from the installed binaries.
+CMake and Ninja are available. LLVM 23.1.2 is now installed and the existing Visual Studio x64 tools/Windows SDK have been configured. The TU3 package has been downloaded and its extracted payload hashes verified against upstream's required constants. Build configuration succeeds; code-generation tools are being compiled separately from the installed binaries.
 
-The pinned SDK checkout was retrieved. Recursive dependency initialization then failed at `thirdparty/imgui`: its configured remote could not provide commit `cdda62349d6068e906c2e0ee340d6ec31eedbb9c` (`not our ref`). Dependency initialization is incomplete. Recover that exact commit from an authoritative source or establish the corrected upstream dependency before proceeding; no replacement version has been guessed.
+The SDK's ImGui pin is unpublished. A documented diagnostic-build workaround uses the SDK's earlier published ImGui pin and omits its two custom font-gamma assignments. Other dependencies are initialized. See `BUILD-NOTES.md` and `sdk-build-compatibility.patch` for the exact deviation; this diagnostic build is not claimed to reproduce the release byte-for-byte.
 
 Validation completed: the session helper successfully prepared Saved/Native and Fresh/Emulated sessions; source whitespace checks passed. Runtime reproduction and compiled-patch validation remain outstanding.
 
-Next: collect paired Native/Emulated reproductions, complete toolchain setup, build diagnostics, identify the failing state/resource, and make a focused fix. Phase 1 remains open until the roadmap completion gate passes.
+Next: finish the diagnostic build, collect paired Native/Emulated reproductions, identify the failing state/resource, and make a focused fix. Computer-use approval is pending after automatic review rejected access to the isolated test window. Phase 1 remains open until the roadmap completion gate passes.

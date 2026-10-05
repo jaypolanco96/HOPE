@@ -1,0 +1,69 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 4392ea4..0f52549 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -122,12 +122,12 @@ endif()
+ # Global compile options
+ add_compile_options(
+     -fno-strict-aliasing
+-    -ffp-model=strict
++    $<IF:$<STREQUAL:${CMAKE_CXX_COMPILER_FRONTEND_VARIANT},MSVC>,/clang:-ffp-model=strict,-ffp-model=strict>
+     $<$<CONFIG:DEBUG>:-g>
+     $<$<CONFIG:DEBUG>:-O0>
+     $<$<CONFIG:RELEASE>:-O3>
+     $<$<CONFIG:RELEASE>:-DNDEBUG>
+-    -fno-char8_t
++    $<IF:$<STREQUAL:${CMAKE_CXX_COMPILER_FRONTEND_VARIANT},MSVC>,/clang:-fno-char8_t,-fno-char8_t>
+ )
+ 
+ # Platform detection (supports AMD64 and ARM64)
+@@ -219,8 +219,10 @@ add_subdirectory(thirdparty)
+ 
+ # Enable warnings after thirdparty
+ add_compile_options(
+-    -Wall
+-    -Wextra
++    # clang-cl interprets -Wall as /Wall (-Weverything), unlike clang++.
++    # /W4 supplies the intended Wall/Wextra diagnostics for this frontend.
++    $<IF:$<STREQUAL:${CMAKE_CXX_COMPILER_FRONTEND_VARIANT},MSVC>,/W4,-Wall>
++    $<$<NOT:$<STREQUAL:${CMAKE_CXX_COMPILER_FRONTEND_VARIANT},MSVC>>:-Wextra>
+ )
+ 
+ include_directories(${REXGLUE_ROOT}/include)
+diff --git a/src/ui/imgui_drawer.cpp b/src/ui/imgui_drawer.cpp
+index 50a26d0..5af18d6 100644
+--- a/src/ui/imgui_drawer.cpp
++++ b/src/ui/imgui_drawer.cpp
+@@ -381,13 +381,8 @@ void ImGuiDrawer::SetupFonts() {
+     config.OversampleV = 1;
+     config.PixelSnapH = false;
+     config.RasterizerMultiply = 1.0f;
+-    // Light-on-dark coverage gamma (rexglue imgui patch): browsers blend text
+-    // gamma-aware, which renders light glyphs on dark backgrounds fatter and
+-    // brighter than plain sRGB alpha blending: alpha^0.62 matches
+-    // DirectWrite white-on-black edge
+-    // profiles (identity was measurably thinner/dimmer). The *_on_light_
+-    // variants below keep gamma 1.0 - dark-on-light needs no correction.
+-    config.RasterizerGamma = 0.62f;
++    // Phase 1 diagnostic build uses the SDK's earlier published ImGui pin.
++    // Its font configuration has no custom RasterizerGamma extension.
+     config.FontLoaderFlags = ImGuiFreeTypeBuilderFlags_NoHinting;
+     ui_font_ = io.Fonts->AddFontFromMemoryCompressedBase85TTF(
+         GetInterRegularCompressedBase85(), 18.0f, &config);
+@@ -406,9 +401,6 @@ void ImGuiDrawer::SetupFonts() {
+     // experiment read as "lighter, not sharper" in playtest. Kept as the
+     // per-polarity tuning knob.
+     config_on_light.RasterizerMultiply = 1.0f;
+-    // Dark-on-light matches the browser with NO coverage curve (harness fit:
+-    // identity beat every contrast/gamma variant once bake==draw size).
+-    config_on_light.RasterizerGamma = 1.0f;
+     ui_font_on_light_ = io.Fonts->AddFontFromMemoryCompressedBase85TTF(
+         GetInterRegularCompressedBase85(), 18.0f, &config_on_light);
+     ui_font_semibold_on_light_ = io.Fonts->AddFontFromMemoryCompressedBase85TTF(
+diff --git a/thirdparty/imgui b/thirdparty/imgui
+index cdda623..6d910d5 160000
+--- a/thirdparty/imgui
++++ b/thirdparty/imgui
+@@ -1 +1 @@
+-Subproject commit cdda62349d6068e906c2e0ee340d6ec31eedbb9c
++Subproject commit 6d910d5487d11ca567b61c7824b0c78c569d62f0
