@@ -5,7 +5,7 @@
  Title="HOPE — Hills, Ollies, Pavement, Expression" Width="1360" Height="850"
  MinWidth="960" MinHeight="640" WindowStartupLocation="CenterScreen"
  WindowStyle="None" ResizeMode="CanResize" Background="#101020"
- KeyDown="Window_KeyDown">
+ KeyDown="Window_KeyDown" PreviewKeyDown="Input_KeyDown" PreviewMouseDown="Input_MouseDown">
  <shell:WindowChrome.WindowChrome><shell:WindowChrome CaptionHeight="48" ResizeBorderThickness="7" CornerRadius="24" GlassFrameThickness="0"/></shell:WindowChrome.WindowChrome>
  <Grid>
   <Image x:Name="Backdrop" Stretch="UniformToFill" IsHitTestVisible="False"/>
@@ -27,7 +27,8 @@
        <Button x:Name="GraphicsNav" Style="{StaticResource Nav}" Content="02   Graphics" Tag="Graphics" Click="Navigate_Click"/>
        <Button x:Name="SavesNav" Style="{StaticResource Nav}" Content="03   My saves" Tag="Saves" Click="Navigate_Click"/>
        <Button x:Name="SetupNav" Style="{StaticResource Nav}" Content="04   Game setup" Tag="Setup" Click="Navigate_Click"/>
-       <Button x:Name="CreditsNav" Style="{StaticResource Nav}" Content="05   Credits" Tag="Credits" Click="Navigate_Click"/>
+       <Button x:Name="HelpNav" Style="{StaticResource Nav}" Content="05   Help &amp; recovery" Tag="Help" Click="Navigate_Click" FontSize="15"/>
+       <Button x:Name="CreditsNav" Style="{StaticResource Nav}" Content="06   Credits" Tag="Credits" Click="Navigate_Click"/>
       </StackPanel>
       <StackPanel Grid.Row="2" VerticalAlignment="Bottom">
        <TextBlock Text="FROM THE BAY, WITH LOVE." FontSize="11" Foreground="{StaticResource Pink}" FontWeight="Bold" Margin="4,0,0,10"/>
@@ -37,13 +38,13 @@
      </Grid>
     </Border>
     <Grid Margin="312,38,32,36">
-     <Grid.RowDefinitions><RowDefinition Height="64"/><RowDefinition Height="*"/><RowDefinition Height="82"/></Grid.RowDefinitions>
+     <Grid.RowDefinitions><RowDefinition Height="64"/><RowDefinition Height="*"/><RowDefinition Height="105"/></Grid.RowDefinitions>
      <Grid>
       <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
        <Border Background="#D918172A" BorderBrush="#8275FFE1" BorderThickness="1" CornerRadius="15" Padding="14,9">
         <TextBlock x:Name="StatusBadge" Text="●  READY TO ROLL" Foreground="{StaticResource Mint}" FontSize="12" FontWeight="Bold"/>
        </Border>
-       <TextBlock Text="PHASE 2 / RELIABILITY PREVIEW" Foreground="#D5CDEC" FontSize="11" VerticalAlignment="Center" Margin="16,0,0,22"/>
+       <TextBlock Text="PHASE 3 / QUALITY OF LIFE" Foreground="#D5CDEC" FontSize="11" VerticalAlignment="Center" Margin="16,0,0,22"/>
       </StackPanel>
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" shell:WindowChrome.IsHitTestVisibleInChrome="True">
        <Button Content="—" Width="42" Padding="0,8" Margin="0,0,8,0" Click="Minimize_Click" AutomationProperties.Name="Minimize launcher"/>
@@ -88,7 +89,7 @@
       </Grid>
       <Border x:Name="DetailsPage" Visibility="Collapsed" Background="#F3151428" BorderBrush="#97706197" BorderThickness="1" CornerRadius="28" Padding="28,22" Margin="0,8,0,22">
        <Border.Effect><DropShadowEffect BlurRadius="28" ShadowDepth="9" Opacity="0.5"/></Border.Effect>
-       <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+       <ScrollViewer x:Name="PageScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <StackPanel>
          <TextBlock x:Name="PageTitle" Style="{StaticResource Title}"/>
          <TextBlock x:Name="PageIntro" TextWrapping="Wrap" Foreground="#CAC4DB" Margin="0,0,0,20" LineHeight="25"/>
@@ -112,6 +113,11 @@
             <CheckBox x:Name="BloomCheck" Content="Bloom"/>
            </StackPanel>
           </Grid>
+          <WrapPanel Margin="0,10,0,0">
+           <CheckBox x:Name="FullscreenCheck" Content="Fullscreen" Margin="0,8,25,8"/>
+           <CheckBox x:Name="VsyncCheck" Content="VSync" Margin="0,8,25,8"/>
+           <CheckBox x:Name="FpsCheck" Content="Show FPS in game" Margin="0,8,0,8"/>
+          </WrapPanel>
           <TextBlock Text="Native effects are available with the Native renderer. Higher resolution, MSAA and AO quality use more GPU resources. Fog, haze and shafts are independent." TextWrapping="Wrap" Foreground="#C8BED9" FontSize="14" Margin="0,16,0,20"/>
           <Button x:Name="SaveGraphicsButton" Content="Save graphics settings" Style="{StaticResource Primary}" HorizontalAlignment="Left" Click="SaveGraphics_Click"/>
          </StackPanel>
@@ -126,13 +132,26 @@
          <StackPanel x:Name="SetupPanel" Visibility="Collapsed">
           <Border Background="#26392E" BorderBrush="{StaticResource Lime}" BorderThickness="1" CornerRadius="18" Padding="20" Margin="0,0,0,22"><TextBlock Text="Bring your own Skate 3 Xbox 360 ISO.&#10;HOPE does not include game files or provide download links." Foreground="{StaticResource Lime}" FontSize="21" FontWeight="Bold" TextWrapping="Wrap"/></Border>
           <TextBlock Text="1. Choose your own ISO" FontSize="21" FontWeight="Bold"/>
-          <TextBlock Text="Use an ISO from your own Xbox 360 copy. If your game files are already installed, you can play without importing again." TextWrapping="Wrap" Foreground="#C8BED9" Margin="0,8,0,15"/>
+          <TextBlock Text="Use an ISO from your own Xbox 360 copy. If your game files are already installed, you can play without importing again." TextWrapping="Wrap" Foreground="#C8BED9" Margin="0,8,0,10"/>
           <Button Content="Choose my ISO…" HorizontalAlignment="Left" Click="ChooseIso_Click"/>
           <TextBlock x:Name="IsoLabel" Text="No ISO selected" Foreground="{StaticResource Mint}" TextWrapping="Wrap" Margin="0,3,0,20"/>
           <TextBlock Text="2. Install and start" FontSize="21" FontWeight="Bold"/>
-          <TextBlock Text="HOPE opens the existing game installer to extract your ISO and finish setup. Keep the installer open until it completes." TextWrapping="Wrap" Foreground="#C8BED9" Margin="0,8,0,15"/>
+          <TextBlock Text="HOPE opens the existing game installer to extract your ISO and finish setup. Keep the installer open until it completes." TextWrapping="Wrap" Foreground="#C8BED9" Margin="0,8,0,10"/>
           <Button Content="Install / start HOPE" Style="{StaticResource Primary}" HorizontalAlignment="Left" Click="Play_Click"/>
           <WrapPanel><Button Content="Use installed game folder…" Click="ChooseGameFolder_Click" Margin="0,8,12,0"/><Button Content="Choose gameplay photo…" Click="ChoosePhoto_Click" Margin="0,8,0,0"/></WrapPanel>
+         </StackPanel>
+         <StackPanel x:Name="HelpPanel" Visibility="Collapsed">
+          <TextBlock Text="GET BACK TO YOUR LINE." Foreground="{StaticResource Mint}" FontSize="22" FontWeight="Bold"/>
+          <TextBlock Text="In game: Escape, Home, or RB + Start opens the PC menu. Return to HOPE Home closes the session after confirmation. Finish saving first. New career keeps your current career and prepares separate saves for a fresh start." TextWrapping="Wrap" Foreground="#C8BED9" Margin="0,8,0,12"/>
+          <TextBlock x:Name="ControllerStatus" Text="Controller: waiting for an XInput device" Foreground="{StaticResource Mint}" Margin="0,0,0,8"/>
+          <TextBlock Text="Recover game settings" FontSize="24" FontWeight="Bold"/>
+          <TextBlock Text="Reset only the selected career's game settings. Its career saves, profiles, supplied game path, ISO choice and other careers stay intact. Current settings are moved to a backup. Changes apply next launch. Close the game first." TextWrapping="Wrap" Foreground="#C8BED9" Margin="0,8,0,10"/>
+          <Button x:Name="ResetSettingsButton" Content="Reset game settings…" Foreground="{StaticResource Pink}" HorizontalAlignment="Left" Click="ResetSettings_Click"/>
+          <TextBlock Text="Choose a backup from before the problem" Foreground="{StaticResource Mint}" Margin="0,8,0,0"/>
+          <ComboBox x:Name="BackupCombo" AutomationProperties.Name="Settings backup"/>
+          <TextBlock x:Name="BackupStatus" Text="No settings backups yet. Resetting settings creates one." Foreground="{StaticResource Mint}" FontSize="14" Margin="0,8,0,14" Visibility="Collapsed"/>
+          <WrapPanel><Button x:Name="RestoreSettingsButton" Content="Restore selected backup" Click="RestoreSettings_Click" Margin="0,0,12,10"/><Button Content="Open career folder" Click="OpenCareer_Click"/></WrapPanel>
+          <TextBlock Text="Current settings are backed up before restoration. A backup may contain the original problem; reset again or choose an earlier backup if needed. Hardware performance presets will follow measured testing." TextWrapping="Wrap" Foreground="#C8BED9" FontSize="14"/>
          </StackPanel>
          <StackPanel x:Name="CreditsPanel" Visibility="Collapsed">
           <TextBlock Text="ORIGINAL RECOMPILATION" Foreground="{StaticResource Pink}" FontWeight="Bold" FontSize="14"/>
@@ -150,6 +169,7 @@
       </Border>
      </Grid>
      <StackPanel Grid.Row="2" VerticalAlignment="Bottom">
+      <TextBlock x:Name="InputHint" Text="Mouse to choose • Tab to move • Enter to select • Esc to go back" Foreground="{StaticResource Mint}" FontSize="12" Margin="0,0,0,7"/>
       <TextBlock x:Name="Feedback" Text="Built for your next session." Foreground="{StaticResource Mint}" FontSize="13" TextWrapping="Wrap" Margin="0,0,0,8" AutomationProperties.LiveSetting="Polite"/>
       <TextBlock Text="YOUR OWN SKATE 3 XBOX 360 ISO REQUIRED • NO GAME FILES OR DOWNLOAD LINKS PROVIDED" FontSize="11" FontWeight="Bold" Foreground="{StaticResource Lime}"/>
       <TextBlock Text="Based on Skate3Recomp by mchughalex  /  ReXGlue + Xenia  /  Unofficial community update" Foreground="#C4B8D5" FontSize="11" Margin="0,6,0,0"/>

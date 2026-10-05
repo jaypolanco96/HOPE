@@ -138,7 +138,12 @@ internal static class SelfTests
                     Check(rejected, "Junction package or nested contents cannot be archived");
                 }
                 Check(File.ReadAllText(Path.Combine(linkFixture, "outside", "SKATER.P")) == "outside fixture", "Junction target preserved");
+                rejected = false;
+                try { SettingsRecovery.Reset(Path.Combine(linkFixture, "packages", "LINKED_SAVE", "SKATER.P")); }
+                catch (IOException) { rejected = true; }
+                Check(rejected && File.ReadAllText(Path.Combine(linkFixture, "outside", "SKATER.P")) == "outside fixture", "Settings reset rejects linked source without modifying target");
             }
+            QoLTests.Run(Path.Combine(root, "qol"), Check);
             return $"Passed {checks} HOPE launcher fixture checks. No game was launched; no real saves were modified.\n";
         }
         finally

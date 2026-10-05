@@ -59,7 +59,7 @@
   </Style>
   <Style TargetType="CheckBox">
    <Setter Property="Foreground" Value="#F6F7FF"/><Setter Property="FontSize" Value="18"/>
-   <Setter Property="Margin" Value="0,12,0,12"/><Setter Property="VerticalContentAlignment" Value="Center"/>
+   <Setter Property="Margin" Value="0,8,0,8"/><Setter Property="VerticalContentAlignment" Value="Center"/>
   </Style>
   <Style TargetType="ComboBoxItem">
    <Setter Property="Foreground" Value="#121020"/>
@@ -69,7 +69,7 @@
    <Setter Property="Foreground" Value="#121020"/>
    <Setter Property="ItemTemplate"><Setter.Value><DataTemplate><TextBlock Text="{Binding Content}" Foreground="#121020" FontSize="17"/></DataTemplate></Setter.Value></Setter>
    <Setter Property="FontSize" Value="17"/><Setter Property="Padding" Value="12,8"/>
-   <Setter Property="Margin" Value="0,6,0,16"/><Setter Property="MinHeight" Value="40"/>
+   <Setter Property="Margin" Value="0,4,0,10"/><Setter Property="MinHeight" Value="40"/>
   </Style>
  </Application.Resources>
 </Application>

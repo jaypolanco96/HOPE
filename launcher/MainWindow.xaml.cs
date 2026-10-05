@@ -19,6 +19,7 @@ public partial class MainWindow : Window, IDisposable
     private readonly List<string> photos = [];
     private int photoIndex;
     private string? photoWarning;
+    private string? settingsWarning;
     private SaveEntry? pendingRemoval;
     private string page = "Home";
     private bool loading;
@@ -38,11 +39,15 @@ public partial class MainWindow : Window, IDisposable
         ReloadCareers();
         Navigate("Home");
         RefreshStatus();
-        if ((state.PreferencesWarning ?? photoWarning) is { } warning) Feedback.Text = warning;
+        if ((state.PreferencesWarning ?? settingsWarning ?? photoWarning) is { } warning) Feedback.Text = warning;
         monitor = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
         monitor.Tick += (_, _) => RefreshStatus();
         monitor.Start();
-        controller = new ControllerNavigation(ControllerInput);
+        controller = new ControllerNavigation(ControllerInput, connected =>
+        {
+            ControllerStatus.Text = connected ? "Controller connected · XInput" : "Controller disconnected · keyboard and mouse remain available";
+            if (!connected) InputHint.Text = "Tab to move • Enter to select • Esc to go back";
+        });
         Loaded += (_, _) => HomeNav.Focus();
         Closed += (_, _) => Dispose();
     }
@@ -57,10 +62,11 @@ public partial class MainWindow : Window, IDisposable
 
     public void Navigate(string destination)
     {
+        PageScroll.ScrollToTop();
         pendingRemoval = null;
         DeleteConfirm.Visibility = Visibility.Collapsed;
         page = destination;
-        foreach (var nav in new[] { HomeNav, GraphicsNav, SavesNav, SetupNav, CreditsNav })
+        foreach (var nav in new[] { HomeNav, GraphicsNav, SavesNav, SetupNav, HelpNav, CreditsNav })
         {
             bool active = (string)nav.Tag == destination;
             nav.Foreground = (Brush)FindResource(active ? "Lime" : "Mint");
@@ -71,19 +77,22 @@ public partial class MainWindow : Window, IDisposable
         GraphicsPanel.Visibility = destination == "Graphics" ? Visibility.Visible : Visibility.Collapsed;
         SavesPanel.Visibility = destination == "Saves" ? Visibility.Visible : Visibility.Collapsed;
         SetupPanel.Visibility = destination == "Setup" ? Visibility.Visible : Visibility.Collapsed;
+        HelpPanel.Visibility = destination == "Help" ? Visibility.Visible : Visibility.Collapsed;
         CreditsPanel.Visibility = destination == "Credits" ? Visibility.Visible : Visibility.Collapsed;
         (PageTitle.Text, PageIntro.Text) = destination switch
         {
             "Graphics" => ("MAKE IT YOURS.", "Set up your next session. Close the game before saving changes here; use the in-game Graphics page for live adjustments."),
             "Saves" => ("YOUR LINES LIVE HERE.", "Manage career saves across the profiles in this installation. Every removal keeps a recovery copy."),
             "Setup" => ("BRING YOUR BOARD.", "You provide the game. HOPE brings the PC interface. No ISO downloads or retail game files are included."),
+            "Help" => ("BACK ON YOUR FEET.", "Controls, settings recovery and your selected career folder, all in one place."),
             "Credits" => ("RESPECT THE ROOTS.", "HOPE stands on the work of the original Skate3Recomp creator and the wider recompilation community."),
             _ => ("HOPE", "Hills, Ollies, Pavement, Expression")
         };
         if (destination == "Saves") RefreshSaves();
         if (destination == "Graphics") LoadGraphics();
         if (destination == "Setup") IsoLabel.Text = state.HasIso ? Path.GetFileName(state.Preferences.IsoPath) : "No ISO selected";
-        Feedback.Text = destination == "Home" ? "Built for your next session." : "Changes stay with this installation.";
+        if (destination == "Help") RefreshRecovery();
+        Feedback.Text = settingsWarning ?? (destination == "Home" ? "Built for your next session." : "Changes stay with this installation.");
         Feedback.Foreground = (Brush)FindResource("Mint");
     }
 
@@ -114,6 +123,10 @@ public partial class MainWindow : Window, IDisposable
             if (lastRunning && !running) Navigate("Home");
             GraphicsForm.IsEnabled = !running;
             SaveGraphicsButton.IsEnabled = !running;
+            FullscreenCheck.IsEnabled = VsyncCheck.IsEnabled = FpsCheck.IsEnabled = !running;
+            ResetSettingsButton.IsEnabled = !running;
+            RestoreSettingsButton.IsEnabled = !running && BackupCombo.Items.Count > 0;
+            BackupCombo.IsEnabled = !running && BackupCombo.Items.Count > 0;
             if (running != lastRunning && page == "Saves") RefreshSaves();
             lastRunning = running;
         });
@@ -176,8 +189,18 @@ public partial class MainWindow : Window, IDisposable
     private void LoadGraphics()
     {
         loading = true;
-        bool Flag(string key, bool fallback) => bool.TryParse(SettingsFile.Read(state.SettingsPath, key, fallback.ToString()), out var v) ? v : fallback;
-        int Number(string key, int fallback) => int.TryParse(SettingsFile.Read(state.SettingsPath, key, fallback.ToString()), out var v) ? v : fallback;
+        settingsWarning = null;
+        string Read(string key, string fallback)
+        {
+            try { return SettingsFile.Read(state.SettingsPath, key, fallback); }
+            catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+            {
+                settingsWarning = "Game settings could not be read. Open Help & recovery. Your career saves are intact.";
+                return fallback;
+            }
+        }
+        bool Flag(string key, bool fallback) => bool.TryParse(Read(key, fallback.ToString()), out var v) ? v : fallback;
+        int Number(string key, int fallback) => int.TryParse(Read(key, fallback.ToString()), out var v) ? v : fallback;
         RendererCombo.SelectedIndex = Flag("skate3_native_render_scene", true) ? 0 : 1;
         ResolutionCombo.SelectedIndex = Math.Clamp(Number("draw_resolution_scale_x", 2), 1, 3) - 1;
         AaCombo.SelectedIndex = Array.IndexOf(new[] { 1, 2, 4, 8 }, Number("skate3_native_render_scene_msaa", 4));
@@ -188,6 +211,9 @@ public partial class MainWindow : Window, IDisposable
         HazeCheck.IsChecked = Flag("skate3_native_render_scene_haze", true);
         ShaftsCheck.IsChecked = Flag("skate3_native_render_scene_shafts", true);
         BloomCheck.IsChecked = Flag("skate3_native_render_scene_bloom", true);
+        FullscreenCheck.IsChecked = Flag("fullscreen", true);
+        VsyncCheck.IsChecked = Flag("vsync", false);
+        FpsCheck.IsChecked = Flag("show_fps_counter", false);
         loading = false;
         UpdateNativeControls();
     }
@@ -198,6 +224,41 @@ public partial class MainWindow : Window, IDisposable
     {
         if (state.IsGameRunning()) throw new IOException("Close the game before changing settings or removing saves here.");
     }
+    private void Input_KeyDown(object sender, KeyEventArgs e) => InputHint.Text = "Tab to move • Enter to select • Esc to go back";
+    private void Input_MouseDown(object sender, MouseButtonEventArgs e) => InputHint.Text = "Click to choose • Scroll for more • Esc to go back";
+    private void RefreshRecovery()
+    {
+        BackupCombo.Items.Clear();
+        foreach (var backup in SettingsRecovery.List(state.SettingsPath))
+            BackupCombo.Items.Add(new ComboBoxItem { Content = backup.Label, Tag = backup });
+        BackupCombo.SelectedIndex = BackupCombo.Items.Count > 0 ? 0 : -1;
+        BackupCombo.Visibility = BackupCombo.Items.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        BackupStatus.Visibility = BackupCombo.Items.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        RestoreSettingsButton.IsEnabled = !state.IsGameRunning() && BackupCombo.Items.Count > 0;
+    }
+    private void ResetSettings_Click(object sender, RoutedEventArgs e) => Run(() =>
+    {
+        RequireGameClosed();
+        if (MessageBox.Show(this, "Reset game settings for this career? Current settings will be backed up. Career saves, profiles and other careers are preserved.",
+            "HOPE — Reset settings", MessageBoxButton.OKCancel, MessageBoxImage.Question, MessageBoxResult.Cancel) != MessageBoxResult.OK) return;
+        var backup = SettingsRecovery.Reset(state.SettingsPath);
+        LoadGraphics();
+        RefreshRecovery();
+        Feedback.Text = backup == null ? "Settings are already at defaults." : "Game settings reset. Your career is intact. Choose a backup below to undo this change.";
+    });
+    private void RestoreSettings_Click(object sender, RoutedEventArgs e) => Run(() =>
+    {
+        RequireGameClosed();
+        if (BackupCombo.SelectedItem is not ComboBoxItem { Tag: SettingsBackup backup }) throw new IOException("Choose a settings backup first.");
+        if (MessageBox.Show(this, "Restore this settings backup? Current settings will also be backed up. Saves and profiles stay intact.",
+            "HOPE — Restore settings", MessageBoxButton.OKCancel, MessageBoxImage.Question, MessageBoxResult.Cancel) != MessageBoxResult.OK) return;
+        SettingsRecovery.Restore(state.SettingsPath, backup.Path);
+        LoadGraphics();
+        RefreshRecovery();
+        Feedback.Text = "Settings restored. They will apply next launch; your career is intact.";
+    });
+    private void OpenCareer_Click(object sender, RoutedEventArgs e) => Run(() =>
+        Process.Start(new ProcessStartInfo(state.ActiveRoot) { UseShellExecute = true })?.Dispose());
     private void SaveGraphics_Click(object sender, RoutedEventArgs e) => Run(() =>
     {
         RequireGameClosed();
@@ -210,7 +271,8 @@ public partial class MainWindow : Window, IDisposable
             ["skate3_native_render_scene_msaa"] = new[] { 1, 2, 4, 8 }[AaCombo.SelectedIndex].ToString(),
             ["skate3_native_render_scene_ssao"] = Flag(AoCheck), ["skate3_native_render_scene_ssao_full_res"] = Flag(AoQualityCheck),
             ["skate3_native_render_scene_fog"] = Flag(FogCheck), ["skate3_native_render_scene_haze"] = Flag(HazeCheck),
-            ["skate3_native_render_scene_shafts"] = Flag(ShaftsCheck), ["skate3_native_render_scene_bloom"] = Flag(BloomCheck)
+            ["skate3_native_render_scene_shafts"] = Flag(ShaftsCheck), ["skate3_native_render_scene_bloom"] = Flag(BloomCheck),
+            ["fullscreen"] = Flag(FullscreenCheck), ["vsync"] = Flag(VsyncCheck), ["show_fps_counter"] = Flag(FpsCheck)
         });
         Feedback.Text = "Graphics saved. Your next session will use these settings.";
     });
@@ -334,6 +396,7 @@ public partial class MainWindow : Window, IDisposable
     {
         // Leave system file dialogs and other applications in control.
         if (!IsActive || !IsEnabled) return;
+        InputHint.Text = "D-pad / stick to move • A to select • B to go back";
         Run(() =>
         {
             if ((buttons & 0x2000) != 0)

@@ -1,6 +1,6 @@
 # HOPE: four-phase update roadmap
 
-Created October 5, 2026. Status: Phase 2 reliability work started at the player's request; Phase 1 runtime verification remains open. The source repository and isolated diagnostic build are ready; the installed binaries and original saves remain preserved. The menu defect is not yet reproduced or fixed.
+Created October 5, 2026. Status: Phase 3 quality-of-life work started at the player's request; earlier runtime completion gates remain open. The source repository and isolated diagnostic build are ready; the installed binaries and original saves remain preserved. The menu defect is not yet reproduced or fixed.
 
 ## Starting evidence
 
@@ -76,4 +76,4 @@ Deliverables: before/after measurements, optimized build, release notes, and rol
 
 The player requested Phase 2 after the PC-friendly and HOPE launcher updates. Work on reliability now while retaining the Phase 1 blocker as an open high-priority issue. Each update should state what changed, its evidence, how it was checked, and any remaining limitations. Advance based on completion gates rather than calendar deadlines.
 
-Current next step: validate the Phase 2 reliability preview described in `../phase2/README.md`, and collect paired controller runs using the isolated Native and Emulated diagnostic sessions described in `CONTROLLER-TEST.md`, then compare frontend transition logs. See `INVESTIGATION.md` and `BUILD-NOTES.md` for source, build, and validation details.
+Current next step: validate the Phase 3 quality-of-life preview described in `../phase3/README.md`, and collect paired controller runs using the isolated Native and Emulated diagnostic sessions described in `CONTROLLER-TEST.md`, then compare frontend transition logs. See `INVESTIGATION.md` and `BUILD-NOTES.md` for source, build, and validation details.

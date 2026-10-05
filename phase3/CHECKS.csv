@@ -1,0 +1,11 @@
+feature,status,validation,remaining
+Help and recovery,Implemented,Offline page and fixture navigation,Visible user interaction
+Settings reset,Implemented,Exact backup and save/profile preservation,Visible confirmation and restart
+Settings restore,Implemented,Cross-career rejection failure preservation and staging cleanup,Visible selection and restart
+Unreadable settings,Implemented,Locked file still allows Help with warning,Live permission recovery
+Display and FPS preferences,Implemented,Preference loader round trip and existing native cvars,Visible gameplay display
+Controller reconnect,Implemented,Synthetic edge handoff and repeat sequences,Physical disconnect reconnect
+Active input prompts,Implemented,Event handlers and readable offline footer,Physical keyboard mouse controller switching
+Difficulty camera persistence,Open,No confirmed game patch,Runtime investigation
+Measured presets,Deferred,No measurements or performance claims,Phase 4 baseline profiling
+Original menu blocker,Open,Retained Phase 1 issue,Reproduction and 30 clean setup runs
