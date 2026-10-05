@@ -1,29 +1,29 @@
-# HOPE PC gameplay menu
+# HOPE controls: original Skate 3 menu restored
 
-HOPE (Hills, Ollies, Pavement, Expression) updates Skate3Recomp by mchughalex: https://github.com/mchughalex/skate3recomp.
+HOPE = Hills, Ollies, Pavement, Expression. Based on Skate3Recomp by mchughalex: https://github.com/mchughalex/skate3recomp.
 
-## Controls and home
+## Installed behavior
 
-Press the controller Menu/Start button during gameplay to open SKATE 3 / PC HOME. Escape, Home, and RB + Start remain alternate controls. Start continues normally during the game's frontend so initial setup can proceed. A held button cannot repeatedly toggle the PC menu; reconnecting with Menu held requires release and a fresh press.
+Controller Start/Menu once again reaches Skate 3's own pause menu. Its Restart, Trick Book, challenge, map and replay actions remain controlled by the game. The HOPE settings overlay opens separately with Escape or RB + Start (the pre-existing F1 alternate also remains). Home is no longer a PC menu shortcut.
 
-Return to Home Screen asks for confirmation, closes the current game session, and returns to the HOPE launcher. Finish saving first. This is the PC home, not a forced transition to the original game's title screen. Existing careers resume normally; choose New career in HOPE for separate fresh saves.
+RB + Start is consumed before the original game receives it, and holding/reconnecting with that chord cannot repeatedly activate settings. Start alone is preserved, including after a controller reconnect.
 
-The PC menu provides graphics, saves, offline player preferences, and Quit to Desktop. Challenges, Map & Replay explicitly opens the original game activities menu. Those game-authored screens may still show console wording/art. The PC menu does not promise to pause the underlying simulation.
+The overlay is labelled HOPE / PC SETTINGS. Its former Return to Home Screen option is now Return to HOPE Launcher, with an explicit description that it closes the session and does not return to Skate 3's title screen. Finish saving first. This option is not presented as the game's main menu.
 
-## Local player
+Automatic offline local-player availability remains enabled with the existing save identity. No console account is required by the host implementation. Some game-authored console wording remains.
 
-HOPE makes the selected offline player available automatically, preserves its existing save identity, and removes the PC menu's sign-in selector. System sign-in requests complete locally without a console account prompt or online sign-in. Existing profile files are not rewritten merely to change runtime sign-in status. Game-authored text and Xbox artwork have not been comprehensively replaced.
+## Actual game menu work
 
-Provide your own legally obtained Skate 3 Xbox 360 ISO. No game download links are included.
+The original menu has NOT yet been rebuilt and a true in-session return to Skate 3's title screen is NOT implemented. Read ACTUAL-MENU-INVESTIGATION.md for the local asset/code findings and the remaining transition work. The prototype which intercepted Start was removed rather than left in the way of original game actions.
 
-## Verification
+## Verification and installation
 
-The diagnostic game/runtime build compiles. Disposable checks cover 11 controller routing cases, 20 profile/save-identity cases, 33 save-management cases, independent fog/haze/shafts persistence, and 75 launcher cases. The symbolic-link save fixture could not run because Windows did not grant that privilege. Original installed binaries and saves are preserved in place.
+The diagnostic game/runtime and launcher compile. Checks pass: 12 original-menu/chord input cases, 20 offline-player/profile cases, 33 save-management cases, graphics persistence and independent fog/haze/shafts cases, and 75 launcher cases. The unchanged installer previously passed 12 disposable checks. A save-management symbolic-link fixture could not run due to missing Windows privilege.
 
-Live controller menu behavior, sign-in completion, challenges/map/replay, home return, and the original intermittent difficulty-screen blocker remain unverified. Earlier automatic approval review rejected native game UI access; this update does not bypass that restriction. This is a review build, with the existing SDK compatibility dependency deviation documented in phase1.
+Game/launcher build source: d39fafe. SDK: ea30f5a. Launcher: 0.3.2. PC-MENU-BUILD.json is the installed payload record; older session.json may describe an earlier build. Program files are backed up before installation. Saves/settings and original root binaries are preserved. The standalone updater can also update completed separate career program files; it refuses installation while Skate 3 is running.
 
-## Installed checkpoint
+Live menu controls, original actions, offline sign-in completion and the intermittent difficulty-screen blocker remain unverified. Earlier automatic approval review rejected native game UI access; no workaround was used to launch or operate the game. Offscreen launcher export and disposable fixtures do not launch Skate 3.
 
-Installed in C:\GOG Games\Skate3Recomp-Windows\HOPE. Game and launcher embed source commit 949f0ef; SDK commit ce55fc2. Installer passed 12 disposable checks including complete root/career updates, unchanged settings/saves, backup coverage and corrupted-payload refusal. Six existing HOPE save/settings files were hash-identical after installation, as were the root original skate3.exe, rexruntime.dll and original roaming career. The existing Phase 3 review bundle remains unchanged. PC-MENU-BUILD.json records the new installed payload; older session.json describes the earlier build. Offscreen launcher Home rendering passed; no game was launched.
+You must provide your own Skate 3 Xbox 360 ISO. No game download links are supplied.
 
-Program backup: HOPE\updates\pc-menu-3a6bc375-d0b7-4881-b9cb-8ddb5c4f7b8d. A separately checked updater is in HOPE-PC-Menu-Update; close Skate 3 before running it.
+Installed checkpoint: nine existing HOPE save/settings files were hash-identical after installing this correction, as were the original root skate3.exe, rexruntime.dll and roaming career. Previous program files are backed up in HOPE\updates\pc-menu-99f3c44b-3650-4523-b027-d19adcc745a9. Offscreen Help layout inspection passed; no game was launched.

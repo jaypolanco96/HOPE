@@ -44,4 +44,4 @@ The runnable launcher requires the .NET 8 Windows Desktop runtime, already avail
 
 Phase 3 adds Help & recovery, reversible selected-career settings reset/restore, fullscreen/VSync/FPS preferences, active-input prompts and controller reconnect protection. See ../phase3/README.md. Live game launch/ISO installation, hardware controls, difficulty/camera persistence and the original intermittent difficulty-screen defect still require runtime validation. Measured presets await Phase 4.
 
-PC gameplay update: Menu/Start during gameplay opens PC Home; local player sign-in is automatic and offline. Return to Home Screen closes the session and opens HOPE. Original activities screens remain available and can retain console wording. See ../pc-gameplay-menu/README.md.
+PC controls correction: Start opens the original Skate 3 menu. Escape or RB + Start opens HOPE settings. Return to HOPE Launcher closes the session; actual Skate 3 title-screen return remains unimplemented. See ../pc-gameplay-menu/README.md and ACTUAL-MENU-INVESTIGATION.md.
