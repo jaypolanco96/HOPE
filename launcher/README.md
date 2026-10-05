@@ -6,7 +6,7 @@ HOPE is a community update built on **Skate3Recomp by mchughalex**: https://gith
 
 ## Start
 
-Open `C:\GOG Games\Skate3Recomp-Windows\HOPE\HOPE.exe` in File Explorer. Keep the launcher and its support files beside `skate3.exe` and the matching runtime DLL. The local HOPE bundle uses portable settings and a copied career, separate from the original installation.
+Open `C:\GOG Games\Skate3Recomp-Windows\HOPE-Phase3-Review\HOPE.exe` in File Explorer. Keep the launcher and its support files beside `skate3.exe` and the matching runtime DLL. The local HOPE bundle uses portable settings and a copied career, separate from the original installation.
 
 Home offers Play, Graphics, My saves, Game setup, and Credits. Use a mouse, Tab/arrow keys and Enter, or an XInput controller. Controller D-pad/stick up/down moves focus, left/right changes selections, A activates, and B cancels save removal or returns Home. Escape also returns Home or cancels confirmation. Native controller navigation needs an actual controller test; PlayStation/generic controller support beyond XInput is not implemented in this launcher.
 
@@ -42,4 +42,4 @@ dotnet build launcher/HOPE.Launcher.csproj -c Release -o out/hope-launcher
 
 The runnable launcher requires the .NET 8 Windows Desktop runtime, already available on this development machine. Copy all output files into the HOPE game bundle. Run fixture checks using `HOPE.exe --self-test --test-report <report path>`. Offline layout export uses `--root <bundle path> --render <PNG path> --page Home|Graphics|Saves|Setup|Credits --size 1360x850`; it shows no native window and starts no game. Fixture checks use disposable data, never actual player saves.
 
-Phase 2 has not started. Live game launch/ISO installation, controller navigation, and the original intermittent difficulty-screen defect still require runtime validation.
+Phase 3 adds Help & recovery, reversible selected-career settings reset/restore, fullscreen/VSync/FPS preferences, active-input prompts and controller reconnect protection. See ../phase3/README.md. Live game launch/ISO installation, hardware controls, difficulty/camera persistence and the original intermittent difficulty-screen defect still require runtime validation. Measured presets await Phase 4.

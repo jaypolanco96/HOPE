@@ -12,7 +12,8 @@ internal static class QoLTests
         var career = Path.Combine(root, "saves", "B13E000000000001", "ALIAS_SKATER", "SKATER.P");
         Directory.CreateDirectory(Path.GetDirectoryName(career)!);
         File.WriteAllText(career, "career progress sentinel");
-        var profiles = Path.Combine(root, "profiles.toml");
+        var profiles = Path.Combine(root, "profiles", "profiles.toml");
+        Directory.CreateDirectory(Path.GetDirectoryName(profiles)!);
         File.WriteAllText(profiles, "profile sentinel");
         File.WriteAllText(settings, "fullscreen = false\nvsync = true\nshow_fps_counter = true\nunrelated = 77\n");
         var original = File.ReadAllBytes(settings);
