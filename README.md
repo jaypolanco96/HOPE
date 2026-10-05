@@ -1,3 +1,9 @@
+# HOPE — Hills, Ollies, Pavement, Expression
+
+This local community update builds on **Skate3Recomp by mchughalex**. The original project and contributors retain credit for the recompilation and renderer. HOPE adds the PC menu, save management, graphics controls, and a Bay Area themed Windows launcher. See [HOPE launcher](launcher/README.md) and [update roadmap](phase1/UPDATE-ROADMAP.md).
+
+Provide your own Skate 3 Xbox 360 ISO. HOPE supplies no retail game files or ISO download links. The upstream project's documentation follows.
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="banner.png">
   <source media="(prefers-color-scheme: light)" srcset="banner-light.png">

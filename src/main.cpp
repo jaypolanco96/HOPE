@@ -36,7 +36,7 @@ class Skate3PureApp : public Skate3BaseApp {
     // Match the macOS bundle name so the title bar and the .app agree.
     return "skate3recomp " SKATE3_BUILD_TITLE;
 #else
-    return "Skate 3 " SKATE3_BUILD_TITLE;
+    return "HOPE — Skate 3 " SKATE3_BUILD_TITLE;
 #endif
   }
 

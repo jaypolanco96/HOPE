@@ -169,7 +169,7 @@ index 50a26d0..5af18d6 100644
          GetInterRegularCompressedBase85(), 18.0f, &config_on_light);
      ui_font_semibold_on_light_ = io.Fonts->AddFontFromMemoryCompressedBase85TTF(
 diff --git a/src/ui/overlay/simple_settings_overlay.cpp b/src/ui/overlay/simple_settings_overlay.cpp
-index c22345f..87bb580 100644
+index c22345f..70706c7 100644
 --- a/src/ui/overlay/simple_settings_overlay.cpp
 +++ b/src/ui/overlay/simple_settings_overlay.cpp
 @@ -54,7 +54,7 @@ constexpr std::array<std::string_view, 7> kCoreSimpleSettingsCvars = {
@@ -665,7 +665,7 @@ index c22345f..87bb580 100644
  
    // ---- Title ----
 -  dl->AddText(bold, title_size, ImVec2(Snap(rail_x), title_y), kColText, "Settings");
-+  dl->AddText(bold, title_size, ImVec2(Snap(rail_x), title_y), kColText, "Skate 3 - PC Menu");
++  dl->AddText(bold, title_size, ImVec2(Snap(rail_x), title_y), kColText, "HOPE - PC Menu");
    if (pending) {
      const char* chip_text = "RESTART REQUIRED TO APPLY";
      float chip_size = font_px(14.0f * s);

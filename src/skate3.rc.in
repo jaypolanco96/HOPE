@@ -12,12 +12,12 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName", "Skate3Recomp project"
-            VALUE "FileDescription", "Skate3Recomp"
+            VALUE "FileDescription", "HOPE - based on Skate3Recomp by mchughalex"
             VALUE "FileVersion", "@SKATE3_FULL_VERSION@"
             VALUE "InternalName", "skate3"
             VALUE "LegalCopyright", "(c) Skate3Recomp contributors"
             VALUE "OriginalFilename", "skate3.exe"
-            VALUE "ProductName", "Skate3Recomp"
+            VALUE "ProductName", "HOPE"
             VALUE "ProductVersion", "@SKATE3_FULL_VERSION@"
             VALUE "Comments", "Fan-made recompilation. Not affiliated with or endorsed by Electronic Arts."
         END

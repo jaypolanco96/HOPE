@@ -1,4 +1,4 @@
-# Skate 3 Recomp: four-phase update roadmap
+# HOPE: four-phase update roadmap
 
 Created October 5, 2026. Status: Phase 1 in progress. The source repository and isolated diagnostic build are ready; the installed binaries and original saves remain preserved. The menu defect is not yet reproduced or fixed.
 
@@ -27,7 +27,7 @@ Deliverables: root-cause report, focused patch, regression coverage for the caus
 
 ## Phase 2 — Find broader bugs and improve reliability
 
-Prerequisite requested by the player: complete the PC-friendly menu, save-management, and graphics-settings update described in `PC-FRIENDLY-UPDATE.md` before starting Phase 2. This brings part of Phase 3 forward; the Phase 1 menu blocker still needs runtime reproduction and verification.
+Prerequisites requested by the player: complete the PC-friendly menu, save-management, graphics-settings update, and HOPE launcher before starting Phase 2. HOPE means Hills, Ollies, Pavement, Expression. See `PC-FRIENDLY-UPDATE.md` and `../launcher/README.md`. The launcher must credit original Skate3Recomp creator mchughalex, use the requested Bay Area styling and authentic HD gameplay backgrounds, and remind players to supply their own Xbox 360 ISO without download links. This brings part of Phase 3 forward; the Phase 1 menu blocker still needs runtime reproduction and verification.
 
 Goal: protect progress and remove other game-stopping failures.
 
