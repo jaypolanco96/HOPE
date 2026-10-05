@@ -301,7 +301,7 @@ public partial class MainWindow : Window, IDisposable
     private void RefreshMods()
     {
         var manager = Mods(); ModList.ItemsSource = manager.List();
-        ModsStatus.Text = manager.Warning.Length > 0 ? manager.Warning : "Tick your choices, then Apply. Imports join the library and start disabled.";
+        ModsStatus.Text = manager.Warning.Length > 0 ? manager.Warning : "Tick your choices, then Apply. Choose one crowd style at a time; crowd mods are cosmetic experiments.";
     }
     private void ImportMod_Click(object sender, RoutedEventArgs e) => Run(() =>
     {

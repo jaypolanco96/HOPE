@@ -3,7 +3,7 @@
   "id": "giant-crowd",
   "name": "Giant Crowd",
   "author": "HOPE",
-  "description": "Supersizes mapped pedestrians to twice their size. Native renderer only; collisions and behavior stay normal.",
+  "description": "Experimental cosmetic mod. Supersizes mapped pedestrians to twice their size. Native renderer only; collisions and behavior stay normal.",
   "settings": {
     "hope_pedestrian_style": 3
   }

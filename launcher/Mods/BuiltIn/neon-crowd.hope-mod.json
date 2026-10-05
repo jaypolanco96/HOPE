@@ -3,7 +3,7 @@
   "id": "neon-crowd",
   "name": "Neon Crowd",
   "author": "HOPE",
-  "description": "Gives mapped pedestrians a bright lime silhouette. Native renderer only; cosmetic, with normal behavior.",
+  "description": "Experimental cosmetic mod. Gives mapped pedestrians a bright lime silhouette. Native renderer only; cosmetic, with normal behavior.",
   "settings": {
     "hope_pedestrian_style": 1
   }
