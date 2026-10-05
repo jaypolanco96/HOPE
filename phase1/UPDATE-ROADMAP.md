@@ -1,6 +1,6 @@
 # Skate 3 Recomp: four-phase update roadmap
 
-Created October 5, 2026. Status: planned; no game binaries or saves changed.
+Created October 5, 2026. Status: Phase 1 in progress. The source repository and isolated diagnostic build are ready; the installed binaries and original saves remain preserved. The menu defect is not yet reproduced or fixed.
 
 ## Starting evidence
 
@@ -74,4 +74,4 @@ Deliverables: before/after measurements, optimized build, release notes, and rol
 
 Complete the Phase 1 blocker fix before expanding feature work. Each update should state what changed, its evidence, how it was checked, and any remaining limitations. Advance based on completion gates rather than calendar deadlines.
 
-Immediate implementation prerequisite: locate the source repository or checkout for this installed build. The installed binaries alone do not provide a maintainable way to implement and verify these source-level fixes.
+Current next step: collect paired controller runs using the isolated Native and Emulated diagnostic sessions described in `CONTROLLER-TEST.md`, then compare frontend transition logs. See `INVESTIGATION.md` and `BUILD-NOTES.md` for source, build, and validation details.
