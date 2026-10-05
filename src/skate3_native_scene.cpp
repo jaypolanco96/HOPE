@@ -5,6 +5,7 @@
 // skate3_native_scene_state.h.
 
 #include "skate3_native_scene.h"
+#include "hope_crowd_mods.h"
 
 #include "generated/skate3_init.h"
 
@@ -58,6 +59,11 @@
 #endif
 
 REXCVAR_DECLARE(std::string, skate3_native_render_snapshot_dir);
+
+REXCVAR_DEFINE_INT32(hope_pedestrian_style, 0, "HOPE",
+                     "Cosmetic mapped pedestrian style: 0 original, 1 neon, 2 pocket, 3 giant. Native renderer only; physics unchanged.")
+    .range(0, 3)
+    .lifecycle(rex::cvar::Lifecycle::kHotReload);
 
 REXCVAR_DEFINE_BOOL(skate3_native_render_scene, true, "Skate 3",
                     "Render the game scene natively from the hooked MeshContext stream, "
@@ -10452,6 +10458,7 @@ void BuildFrameScene(uint8_t* base, const SubmitRecord* records, size_t count) {
       }
     }
   }
+  hope::ApplyCrowdStyle(scene.items, REXCVAR_GET(hope_pedestrian_style));
   g_last_publish_ns.store(std::chrono::duration_cast<std::chrono::nanoseconds>(
                               std::chrono::steady_clock::now().time_since_epoch())
                               .count(),

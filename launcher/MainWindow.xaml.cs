@@ -25,11 +25,15 @@ public partial class MainWindow : Window, IDisposable
     private bool loading;
     private bool lastRunning;
     private bool loadingCareers;
+    private readonly List<GraphicsOption> worldGraphics = AdvancedGraphics.World();
+    private readonly List<GraphicsOption> nativeGraphics = AdvancedGraphics.Native();
 
     public MainWindow(string root)
     {
         state = new(root);
         InitializeComponent();
+        WorldGraphicsOptions.ItemsSource = worldGraphics;
+        NativeGraphicsOptions.ItemsSource = nativeGraphics;
         var directory = Path.Combine(root, "assets", "gameplay");
         if (Directory.Exists(directory)) photos.AddRange(Directory.EnumerateFiles(directory, "*.jpg").Order());
         if (state.Preferences.PhotoPath is { } photo && File.Exists(photo)) photos.Insert(0, photo);
@@ -125,7 +129,9 @@ public partial class MainWindow : Window, IDisposable
             NewCareerButton.IsEnabled = !running && state.HasGame;
             if (lastRunning && !running) Navigate("Home");
             GraphicsForm.IsEnabled = !running;
-            SaveGraphicsButton.IsEnabled = !running;
+            WorldGraphicsOptions.IsEnabled = !running;
+            AdvancedNativePanel.IsEnabled = !running && RendererCombo.SelectedIndex == 0;
+            SaveGraphicsButton.IsEnabled = SaveGraphicsTopButton.IsEnabled = !running;
             ApplyModsButton.IsEnabled = DisableModsButton.IsEnabled = !running;
             FullscreenCheck.IsEnabled = VsyncCheck.IsEnabled = FpsCheck.IsEnabled = !running;
             ResetSettingsButton.IsEnabled = !running;
@@ -219,12 +225,13 @@ public partial class MainWindow : Window, IDisposable
         FullscreenCheck.IsChecked = Flag("fullscreen", true);
         VsyncCheck.IsChecked = Flag("vsync", false);
         FpsCheck.IsChecked = Flag("show_fps_counter", false);
+        foreach (var option in worldGraphics.Concat(nativeGraphics)) option.Load(Read);
         loading = false;
         UpdateNativeControls();
     }
 
     private void Renderer_Changed(object sender, SelectionChangedEventArgs e) { if (!loading && NativeEffects != null) UpdateNativeControls(); }
-    private void UpdateNativeControls() { NativeEffects.IsEnabled = AaCombo.IsEnabled = RendererCombo.SelectedIndex == 0; NativeEffects.Opacity = NativeEffects.IsEnabled ? 1 : 0.45; }
+    private void UpdateNativeControls() { NativeEffects.IsEnabled = AaCombo.IsEnabled = RendererCombo.SelectedIndex == 0; NativeEffects.Opacity = NativeEffects.IsEnabled ? 1 : 0.45; AdvancedNativePanel.IsEnabled = NativeEffects.IsEnabled && !state.IsGameRunning(); AdvancedNativePanel.Opacity = NativeEffects.IsEnabled ? 1 : .45; }
     private void RequireGameClosed()
     {
         if (state.IsGameRunning()) throw new IOException("Close the game before changing settings or removing saves here.");
@@ -275,7 +282,7 @@ public partial class MainWindow : Window, IDisposable
         RequireGameClosed();
         string Flag(CheckBox box) => box.IsChecked == true ? "true" : "false";
         var scale = (ResolutionCombo.SelectedIndex + 1).ToString();
-        SettingsFile.Update(state.SettingsPath, new Dictionary<string, string>
+        var updates = new Dictionary<string, string>
         {
             ["skate3_native_render_scene"] = RendererCombo.SelectedIndex == 0 ? "true" : "false",
             ["resolution_scale"] = scale, ["draw_resolution_scale_x"] = scale, ["draw_resolution_scale_y"] = scale,
@@ -284,7 +291,9 @@ public partial class MainWindow : Window, IDisposable
             ["skate3_native_render_scene_fog"] = Flag(FogCheck), ["skate3_native_render_scene_haze"] = Flag(HazeCheck),
             ["skate3_native_render_scene_shafts"] = Flag(ShaftsCheck), ["skate3_native_render_scene_bloom"] = Flag(BloomCheck),
             ["fullscreen"] = Flag(FullscreenCheck), ["vsync"] = Flag(VsyncCheck), ["show_fps_counter"] = Flag(FpsCheck)
-        });
+        };
+        foreach (var option in worldGraphics.Concat(nativeGraphics)) updates[option.Key] = option.Literal;
+        SettingsFile.Update(state.SettingsPath, updates);
         Feedback.Text = "Graphics saved. Your next session will use these settings.";
     });
 
@@ -443,7 +452,8 @@ public partial class MainWindow : Window, IDisposable
             if ((buttons & 12) != 0)
             {
                 int delta = (buttons & 4) != 0 ? -1 : 1;
-                if (focused is ComboBox combo && combo.IsEnabled)
+                if (focused is Slider slider && slider.IsEnabled) slider.Value = Math.Clamp(slider.Value + delta * slider.SmallChange, slider.Minimum, slider.Maximum);
+                else if (focused is ComboBox combo && combo.IsEnabled)
                     combo.SelectedIndex = Math.Clamp(combo.SelectedIndex + delta, 0, combo.Items.Count - 1);
                 else if (focused is ListBox list && list.Items.Count > 0)
                     list.SelectedIndex = Math.Clamp(list.SelectedIndex + delta, 0, list.Items.Count - 1);

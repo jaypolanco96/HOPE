@@ -1,0 +1,10 @@
+{
+  "formatVersion": 1,
+  "id": "pocket-crowd",
+  "name": "Pocket Crowd",
+  "author": "HOPE",
+  "description": "Shrinks mapped pedestrians to half size. Native renderer only; collisions and behavior stay normal.",
+  "settings": {
+    "hope_pedestrian_style": 2
+  }
+}

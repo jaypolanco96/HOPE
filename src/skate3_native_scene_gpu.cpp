@@ -5,6 +5,7 @@
 
 #include "skate3_native_debug_dialog.h"
 #include "skate3_native_scene.h"
+#include "hope_crowd_mods.h"
 
 #include "generated/skate3_init.h"
 
@@ -9467,6 +9468,8 @@ bool RenderScene(const NativeGuestOutputRenderContext& context, void* /*user_dat
     if (prof_items) {
       di_t3 = PerfClock::now();
     }
+    if (item.hope_neon_crowd && debug_mode == 0 &&
+        g_r.showcase_rows[0] == 0.0f && g_r.showcase_rows[1] == 0.0f) hope::NeonTint(constants);
     cmd->SetRootConstants(0, 52, constants, 0);
 
     cmd->SetTexture(1, diffuse->srv);

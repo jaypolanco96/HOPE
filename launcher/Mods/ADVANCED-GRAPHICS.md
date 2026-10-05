@@ -1,0 +1,19 @@
+# Advanced graphics and content investigation
+
+HOPE 0.6 adds advanced native graphics in the launcher and the Escape / RB + Start PC settings overlay: screen-space reflections and quality/strength, HDR lighting intermediate (not HDR display output), AO radius/strength, bloom strength, volumetric quality, soft-shadow tuning, texture mipmaps, graffiti/decals and experimental quad-list particle draws. Launcher also exposes separate draw/LOD distances and camera field of view. Existing shadow resolution and PCSS controls remain supported. Controls correspond to existing renderer paths. Particle sprites are not correctly textured yet and can appear as white squares; the option is explicitly experimental and defaults off. No FPS improvement is claimed.
+
+The three retired graphics presets are replaced by Neon Crowd, Pocket Crowd and Giant Crowd. These are original HOPE render-only code and require Native rendering plus the existing LivingWorld identity mapping. Mapped NPC bodies/hair are targeted; player and traffic remain original. Pocket/Giant scale copied bone palettes around a shared entity foot anchor after interpolation; body and shadow passes consume the same transformed copy. Guest memory, simulation, behavior, collisions, recipes, assets and saves are never edited. Nonfinite, oversized/truncated, unmapped palettes are left alone. No retail art is bundled. The three styles conflict with each other and are disabled by default. Actual gameplay validation remains open.
+
+## iMMERSE Pro
+
+Inspected local Documents/iMMERSE Pro_2509: RTGI Diffuse/Specular are ReShade FX shaders with ReShade-specific depth, resource and technique dependencies; they are not native scene path tracing. Native HOPE uses its own D3D12/Vulkan RHI and compiled HLSL/SPIR-V. A functioning integration needs an external ReShade deployment and depth verification or a substantial original renderer implementation. No shader source/assets were copied into this repository or update. The bundled LICENSE allows private modifications but section 4 requires author permission to incorporate source into another original project, and sections 1/3 prohibit redistribution without permission. The launcher reports path tracing unavailable rather than adding an inert setting. See the creator's RTGI guide: https://guides.martysmods.com/shaders/immersepro/rtgispecular/.
+
+## Local asset audit
+
+Read archive indexes only: 51 BIG archives, 45,217 entries. Found dem_bones.xml / .recipe and dem_bones_hom variants in marquee.big, and dem_bones animation assets in miscload.big. PedestrianSkeletonPres/Sim names denote animation-rig infrastructure, not proof of a skeletal pedestrian character skin. A compatible Dem Bones-to-pedestrian replacement has not been verified, so no skeleton crowd toggle is offered. Only beta-named match: denim_tight_famle_denim_tight_beta_alternative_fit_material.rx2 in fedynamic.big. A clothing texture name does not establish a playable beta map/mode/content pack. No verified beta bundle/loading path was found; Game setup reports beta content unavailable. No retail archives or assets were copied, replaced, redistributed or unlocked.
+
+## Fixture correction
+
+An early new graphics fixture omitted portable.txt and wrote test graphics into the original Roaming/skate3/settings.toml. It did not alter saves. Its resulting settings were preserved in ignored local recovery storage; the original shared settings were restored from the earlier local-phase1/baseline/settings.toml copy. This is an earlier baseline restoration, not a byte-exact pre-test snapshot. The fixture now creates portable.txt and asserts its SettingsPath is within its temporary folder before making changes. Corrected runs also verify the restored shared settings hash stays unchanged. HOPE's active portable career settings were not modified by the fixture.
+
+Credit: HOPE is based on Skate3Recomp by mchughalex. No original creator credits were removed.

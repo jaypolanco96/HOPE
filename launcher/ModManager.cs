@@ -85,6 +85,7 @@ public sealed class ModManager(string bundleRoot, string careerRoot, Func<bool> 
     }
     private static string Literal(string key, JsonElement value)
     {
+        if (key == "hope_pedestrian_style" && value.ValueKind == JsonValueKind.Number && value.TryGetInt32(out var style) && style is >= 0 and <= 3) return style.ToString();
         var boolean = key is "skate3_frontend_movies_auto_skip" or "skate3_native_render_scene_fog" or
             "skate3_native_render_scene_haze" or "skate3_native_render_scene_shafts" or
             "skate3_native_render_scene_bloom" or "skate3_native_render_scene_ssao";
@@ -118,7 +119,6 @@ public sealed class ModManager(string bundleRoot, string careerRoot, Func<bool> 
         if (!File.Exists(Journal)) return;
         if (gameRunning()) throw new IOException("Close the game to recover an interrupted mod change.");
         if (new FileInfo(Journal).Length > 5000000) throw new IOException("Mod recovery record is too large.");
-        if (new FileInfo(Journal).Length > 5000000) throw new IOException("Mod recovery record is too large.");
         var transaction = JsonSerializer.Deserialize<ModTransaction>(File.ReadAllText(Journal), Json) ?? throw new IOException("Unreadable mod recovery record.");
         var before = transaction.BeforeSettings == null ? null : Convert.FromBase64String(transaction.BeforeSettings);
         var beforeState = transaction.BeforeState == null ? null : Convert.FromBase64String(transaction.BeforeState);
@@ -138,8 +138,8 @@ public sealed class ModManager(string bundleRoot, string careerRoot, Func<bool> 
         if (state.Enabled == null || state.Originals == null || state.Applied == null) throw new IOException("Unreadable mod state.");
         foreach (var pair in state.Originals.Concat(state.Applied.Select(p => new KeyValuePair<string,string?>(p.Key,p.Value)))) {
             // Ledger lines can only restore their own supported single-line assignment.
-            var probe = BuiltIns.SelectMany(m => m.Settings).FirstOrDefault(p => p.Key == pair.Key);
-            if (probe.Key == null || pair.Value != null && (pair.Value.Contains('\n') || pair.Value.Contains('\r') || !Regex.IsMatch(pair.Value, "^\\s*" + Regex.Escape(pair.Key) + "\\s*=")))
+            var supported = pair.Key is "hope_pedestrian_style" or "skate3_frontend_movies_auto_skip" or "skate3_field_of_view" or "skate3_native_render_scene_fog" or "skate3_native_render_scene_haze" or "skate3_native_render_scene_shafts" or "skate3_native_render_scene_bloom" or "skate3_native_render_scene_ssao" or "skate3_native_render_scene_msaa";
+            if (!supported || pair.Value != null && (pair.Value.Contains('\n') || pair.Value.Contains('\r') || !Regex.IsMatch(pair.Value, "^\\s*" + Regex.Escape(pair.Key) + "\\s*=")))
                 throw new IOException("Invalid mod restoration record.");
         }
         return state;
@@ -152,7 +152,7 @@ public sealed class ModManager(string bundleRoot, string careerRoot, Func<bool> 
             try { var mod = Parse(Encoding.UTF8.GetString(Bytes(file)!)); if (catalog.Any(m => m.Id == mod.Id)) throw new InvalidDataException("Duplicate ID."); catalog.Add(mod); }
             catch (Exception error) when (error is IOException or InvalidDataException or JsonException or ArgumentException) { Warning += Path.GetFileName(file) + ": " + error.Message + " "; }
         }
-        if (state.Enabled.Any(id => catalog.All(m => m.Id != id))) Warning += "An enabled imported mod is missing. Apply your selection to restore its settings.";
+        if (state.Enabled.Any(id => catalog.All(m => m.Id != id))) Warning += "A previously enabled mod is unavailable. Apply your selection to restore its settings.";
         return catalog.Select(m => new ModChoice { Definition=m, Enabled=state.Enabled.Contains(m.Id) }).ToList();
     }
     public string Import(string path)

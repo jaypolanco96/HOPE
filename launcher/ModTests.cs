@@ -13,9 +13,12 @@ public static class ModTests
         var originalBytes = File.ReadAllBytes(settings);
         var manager = new ModManager(root,root,()=>false);
         check(manager.List().Count == 5 && manager.List().All(m=>!m.Enabled),"Five built-in mods start disabled");
-        manager.Apply(["wide-streets","clean-lens","no-intro-videos"]);
+        manager.Apply(["wide-streets","neon-crowd","no-intro-videos"]);
         check(File.ReadAllText(settings).Contains("skate3_field_of_view = 75") && File.ReadAllText(settings).Contains("skate3_frontend_movies_auto_skip = true"),"Multiple mods apply supported values");
         check(manager.List().Count(m=>m.Enabled)==3,"Enabled selection persists");
+        var appliedBytes=File.ReadAllBytes(settings);
+        bool styleConflict=false;try{manager.Apply(["pocket-crowd","giant-crowd"]);}catch(IOException){styleConflict=true;}
+        check(styleConflict && File.ReadAllBytes(settings).SequenceEqual(appliedBytes), "Crowd styles conflict without changing active mods");
         manager.Apply([]);
         check(File.ReadAllBytes(settings).SequenceEqual(originalBytes),"Disable restores original bytes including BOM, comments and tables");
         manager.Apply(["wide-streets"]);
@@ -51,6 +54,11 @@ public static class ModTests
         manager.Apply(["custom-view"]); manager.Apply([]);
         check(File.ReadAllBytes(settings).SequenceEqual(before),"Imported mod applies and reverses");
         File.AppendAllText(settings,"\nskate3_field_of_view = 100\n"); // append is in table, not root
+        File.WriteAllText(settings,"skate3_native_render_scene_bloom = false\n");
+        File.WriteAllText(ledger,"""{"Enabled":["clean-lens"],"Originals":{"skate3_native_render_scene_bloom":"skate3_native_render_scene_bloom = true"},"Applied":{"skate3_native_render_scene_bloom":"skate3_native_render_scene_bloom = false"}}""");
+        check(manager.List().Count == 6 && manager.Warning.Contains("unavailable"), "Retired built-in ledger remains readable");
+        manager.Apply([]);
+        check(File.ReadAllText(settings).Contains("skate3_native_render_scene_bloom = true"), "Retired built-in disables and restores its original value");
         var malformed="skate3_field_of_view = 60\nskate3_field_of_view = 70\n";File.WriteAllText(settings,malformed);
         rejected=false;try{manager.Apply(["wide-streets"]);}catch(Exception e) when(e is IOException or UnauthorizedAccessException){rejected=true;}
         check(rejected && File.ReadAllText(settings)==malformed,"Duplicate root settings refuse mutation");

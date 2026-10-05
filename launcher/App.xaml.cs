@@ -38,6 +38,7 @@ public partial class App : Application
                 visual.Measure(new Size(width, height));
                 visual.Arrange(new Rect(0, 0, width, height));
                 visual.UpdateLayout();
+                if (Value("--scroll") is { } scroll) { window.PageScroll.ScrollToVerticalOffset(double.Parse(scroll, System.Globalization.CultureInfo.InvariantCulture)); visual.UpdateLayout(); }
                 var bitmap = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Pbgra32);
                 bitmap.Render(visual);
                 var encoder = new PngBitmapEncoder();

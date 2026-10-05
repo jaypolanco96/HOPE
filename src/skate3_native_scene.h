@@ -94,6 +94,7 @@ struct DrawItem {
   // sky dome into visibly shaded rectangular panels.
   bool unlit;
   bool skinned;
+  bool hope_neon_crowd = false;
   // Grayscale-tinted material (CAS hair): the shader multiplies the diffuse
   // by a per-character color staged in the PIXEL constant bank. Detected via
   // the AttribulatorMaterialName channel; tint captured with the palette.

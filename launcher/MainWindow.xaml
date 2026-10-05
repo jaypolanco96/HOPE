@@ -95,6 +95,7 @@
          <TextBlock x:Name="PageTitle" Style="{StaticResource Title}"/>
          <TextBlock x:Name="PageIntro" TextWrapping="Wrap" Foreground="#CAC4DB" Margin="0,0,0,20" LineHeight="25"/>
          <StackPanel x:Name="GraphicsPanel" Visibility="Collapsed">
+          <Button x:Name="SaveGraphicsTopButton" Content="Save graphics settings" Style="{StaticResource Primary}" HorizontalAlignment="Left" Click="SaveGraphics_Click" Margin="0,0,0,20"/>
           <Grid x:Name="GraphicsForm">
            <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="30"/><ColumnDefinition/></Grid.ColumnDefinitions>
            <StackPanel>
@@ -120,6 +121,20 @@
            <CheckBox x:Name="FpsCheck" Content="Show FPS in game" Margin="0,8,0,8"/>
           </WrapPanel>
           <TextBlock Text="Native effects are available with the Native renderer. Higher resolution, MSAA and AO quality use more GPU resources. Fog, haze and shafts are independent." TextWrapping="Wrap" Foreground="#C8BED9" FontSize="14" Margin="0,16,0,20"/>
+
+          <Border CornerRadius="18" BorderBrush="#786397" BorderThickness="1" Padding="18" Margin="0,0,0,18"><StackPanel>
+           <TextBlock Text="DISTANCE &amp; CAMERA" Foreground="{StaticResource Mint}" FontWeight="Bold" FontSize="21"/>
+           <ItemsControl x:Name="WorldGraphicsOptions" ItemTemplate="{StaticResource GraphicsOptionTemplate}"/>
+          </StackPanel></Border>
+          <Border x:Name="AdvancedNativePanel" CornerRadius="18" BorderBrush="#786397" BorderThickness="1" Padding="18" Margin="0,0,0,18"><StackPanel>
+           <TextBlock Text="ADVANCED NATIVE GRAPHICS" Foreground="{StaticResource Mint}" FontWeight="Bold" FontSize="21"/>
+           <TextBlock Text="These controls require the Native renderer. Raise quality gradually and compare performance. Experimental options start off and still need play testing." TextWrapping="Wrap" Foreground="#C8BED9" Margin="0,8,0,12"/>
+           <ItemsControl x:Name="NativeGraphicsOptions" ItemTemplate="{StaticResource GraphicsOptionTemplate}"/>
+          </StackPanel></Border>
+          <Border CornerRadius="18" Background="#30243F" Padding="18" Margin="0,0,0,18"><StackPanel>
+           <TextBlock Text="PATH TRACING" Foreground="{StaticResource Pink}" FontWeight="Bold"/>
+           <TextBlock Text="Not available in this renderer. iMMERSE Pro is an external ReShade RTGI effect; it has not been integrated or bundled with HOPE." TextWrapping="Wrap" Foreground="#C8BED9" Margin="0,8,0,0"/>
+          </StackPanel></Border>
           <Button x:Name="SaveGraphicsButton" Content="Save graphics settings" Style="{StaticResource Primary}" HorizontalAlignment="Left" Click="SaveGraphics_Click"/>
          </StackPanel>
          <StackPanel x:Name="ModsPanel" Visibility="Collapsed">
@@ -147,6 +162,7 @@
           <TextBlock Text="Use an ISO from your own Xbox 360 copy. If your game files are already installed, you can play without importing again." TextWrapping="Wrap" Foreground="#C8BED9" Margin="0,8,0,10"/>
           <Button Content="Choose my ISO…" HorizontalAlignment="Left" Click="ChooseIso_Click"/>
           <TextBlock x:Name="IsoLabel" Text="No ISO selected" Foreground="{StaticResource Mint}" TextWrapping="Wrap" Margin="0,3,0,20"/>
+          <Border CornerRadius="18" Background="#30243F" Padding="18" Margin="0,0,0,18"><StackPanel><TextBlock Text="BETA CONTENT" Foreground="{StaticResource Pink}" FontWeight="Bold"/><TextBlock Text="No verified playable beta pack is available in this build. A beta toggle will become available when compatible content is validated." TextWrapping="Wrap" Foreground="#C8BED9" Margin="0,8,0,0"/></StackPanel></Border>
           <TextBlock Text="2. Install and start" FontSize="21" FontWeight="Bold"/>
           <TextBlock Text="HOPE opens the existing game installer to extract your ISO and finish setup. Keep the installer open until it completes." TextWrapping="Wrap" Foreground="#C8BED9" Margin="0,8,0,10"/>
           <Button Content="Install / start HOPE" Style="{StaticResource Primary}" HorizontalAlignment="Left" Click="Play_Click"/>
