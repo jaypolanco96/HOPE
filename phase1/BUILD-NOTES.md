@@ -6,6 +6,32 @@ Build output is isolated in `out/build/phase1`. Local configure/build helpers an
 
 The SDK's GNU-style flags needed adaptation for clang-cl: strict floating-point behavior and disabling char8_t now use `/clang:` forwarding. Its `-Wall` became `/Wall` under clang-cl, enabling every diagnostic and generating hundreds of thousands of warnings; this is corrected to `/W4`, the intended Wall/Wextra equivalent. The first bootstrap build was interrupted and restarted with these corrections. Errors and the normal warning checks remain enabled.
 
+The application manifest is now supplied as a CMake target source, so CMake's manifest step merges and embeds it. Direct `/MANIFESTINPUT` conflicted with CMake's link step under lld.
+
+LLVM 23 also lowered generated SIMDe nearest-even rounding to `roundevenf`, which the Windows UCRT does not provide. `src/skate3_math_compat.cpp` supplies a Windows/Clang implementation using IEEE-754 float bits, preserving signed zero, infinity, NaNs, and rounding-mode independence. The standalone `skate3_math_compat_test` target passed 199,260 bit-exact checks against the UCRT's double-precision nearest-even operation across all four rounding modes, plus NaN checks. It covers explicit halfway/adjacent/large/subnormal cases and 50,000 deterministic random bit patterns. This is a compiler/runtime compatibility fix, not evidence that the menu bug is solved.
+
+Both code-generation targets completed successfully. Main game analysis discovered 38,755 functions; EAWebkit discovered 16,713. Nonfatal unresolved-conditional-branch diagnostics were emitted during game code generation and are retained in `local-phase1/codegen-build-corrected.log`. Boot and regression tests are still required before treating the resulting build as usable.
+
+## Completed build
+
+The final diagnostic build completed successfully. The embedded application manifest was extracted and checked for its Windows compatibility entries, common-controls dependency, and PerMonitorV2 DPI awareness. The executable's import table names `rexruntimerd.dll`, which is included in each diagnostic session.
+
+- Executable: `out/build/phase1/skate3.exe`, 102,656,512 bytes; SHA-256 `d160a43fa592bb3a253b7009cb816f36867a524b7ea0e9ca4f4c8784f41fea20`.
+- Runtime: `out/build/phase1/rexruntimerd.dll`, 21,238,272 bytes; SHA-256 `9a005dc65670bf0dc20787fe22a20224f908738d364b9b0ac0d28de1fce71ba6`.
+- Displayed development version: `2.0.0.3-dev.g8c4afaa`, RelWithDebInfo, built October 5 at 10:53 Eastern. The upstream release base is v2.0.2; the development identifier is derived from the project's version floor and local history.
+- SDK compatibility commit: `a1a8ff868a8944396f05be2e351d662319d04086`.
+
+The game build was made from project commit `8c4afaa` plus the manifest and math compatibility changes recorded in this repository. Documentation/session-helper changes were subsequently committed without rebuilding these same binary artifacts.
+
+Fresh diagnostic test packages are in `local-phase1/sessions`:
+
+- `20261005-105418-Fresh-Native-Diagnostic-Controller-6f00b610`
+- `20261005-105423-Fresh-Emulated-Diagnostic-Controller-b30e0dd6`
+- `20261005-105425-Fresh-Native-Diagnostic-Keyboard-8c1bd14e`
+- `20261005-105428-Fresh-Emulated-Diagnostic-Keyboard-1e18dcc6`
+
+All four packages have verified matching executable/runtime hashes, portable user-data isolation, and no copied career save. None has been launched or tested. The original installed executable, runtime, default.xex, and default.xexp still match the baseline hashes.
+
 ## ImGui dependency workaround
 
 The SDK's release pin `cdda62349d6068e906c2e0ee340d6ec31eedbb9c` is unavailable from its configured remote. SDK history shows this and its immediately preceding pin were custom settings-overlay revisions. For diagnostic builds, the SDK now uses its earlier published pin `6d910d5487d11ca567b61c7824b0c78c569d62f0` (ImGui 1.92.5). Two unsupported `RasterizerGamma` assignments were removed from the PC settings overlay font setup. This changes overlay text coverage; it is a deliberate build workaround, not a claimed exact reconstruction of the release or a fix for the game's difficulty menu. Remaining pinned dependencies were retrieved successfully.

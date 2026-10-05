@@ -1,5 +1,9 @@
-case_id,profile,renderer,input,confirm_style,difficulty,camera,result,blank_time,audio_continues,background_continues,back_responds,f5_result,log_path
-P1-001,Saved,Native,controller,deliberate,unknown,unknown,not_run,,,,,,
-P1-002,Saved,Emulated,controller,deliberate,unknown,unknown,not_run,,,,,,
-P1-003,Fresh,Native,controller,deliberate,unknown,unknown,not_run,,,,,,
-P1-004,Fresh,Emulated,controller,deliberate,unknown,unknown,not_run,,,,,,
+case_id,profile,renderer,build,input,confirm_style,difficulty,camera,result,blank_time,audio_continues,background_continues,back_responds,f5_result,log_path
+P1-001,Saved,Native,Installed,controller,deliberate,unknown,unknown,not_run,,,,,,
+P1-002,Saved,Emulated,Installed,controller,deliberate,unknown,unknown,not_run,,,,,,
+P1-003,Fresh,Native,Installed,controller,deliberate,unknown,unknown,not_run,,,,,,
+P1-004,Fresh,Emulated,Installed,controller,deliberate,unknown,unknown,not_run,,,,,,
+P1-005,Fresh,Native,Diagnostic,controller,deliberate,unknown,unknown,not_run,,,,,,
+P1-006,Fresh,Emulated,Diagnostic,controller,deliberate,unknown,unknown,not_run,,,,,,
+P1-007,Fresh,Native,Diagnostic,keyboard,deliberate,unknown,unknown,not_run,,,,,,
+P1-008,Fresh,Emulated,Diagnostic,keyboard,deliberate,unknown,unknown,not_run,,,,,,

@@ -9,8 +9,9 @@ $repoRoot = Split-Path -Parent $PSScriptRoot
 $installRoot = Split-Path -Parent $repoRoot
 $baseline = Join-Path $repoRoot 'local-phase1\baseline'
 $binaryRoot = if ($Build -eq 'Diagnostic') { Join-Path $repoRoot 'out\build\phase1' } else { $baseline }
+$runtimeName = if ($Build -eq 'Diagnostic') { 'rexruntimerd.dll' } else { 'rexruntime.dll' }
 $gameRoot = Join-Path $installRoot 'game'
-foreach ($required in @('skate3.exe', 'rexruntime.dll')) {
+foreach ($required in @('skate3.exe', $runtimeName)) {
     if (-not (Test-Path -LiteralPath (Join-Path $binaryRoot $required))) {
         throw "Missing $Build binary: $required"
     }
@@ -22,7 +23,7 @@ if (-not (Test-Path -LiteralPath (Join-Path $gameRoot 'default.xex'))) {
 $sessionName = '{0}-{1}-{2}-{3}-{4}-{5}' -f (Get-Date -Format 'yyyyMMdd-HHmmss'), $Profile, $Renderer, $Build, $InputMethod, ([guid]::NewGuid().ToString('N').Substring(0, 8))
 $sessionRoot = Join-Path $repoRoot "local-phase1\sessions\$sessionName"
 New-Item -ItemType Directory -Path $sessionRoot | Out-Null
-Copy-Item -LiteralPath (Join-Path $binaryRoot 'skate3.exe'), (Join-Path $binaryRoot 'rexruntime.dll') -Destination $sessionRoot
+Copy-Item -LiteralPath (Join-Path $binaryRoot 'skate3.exe'), (Join-Path $binaryRoot $runtimeName) -Destination $sessionRoot
 $settings = Get-Content -LiteralPath (Join-Path $baseline 'settings.toml')
 $settings = $settings | Where-Object { $_ -notmatch '^\s*(skate3_demo_path|skate3_demo_path_probe|skate3_native_render_scene|mnk_mode)\s*=' }
 $nativeValue = if ($Renderer -eq 'Native') { 'true' } else { 'false' }
@@ -45,7 +46,8 @@ New-Item -ItemType File -Path (Join-Path $sessionRoot 'portable.txt') | Out-Null
     release_base_commit = 'f6e0ae87fdfecbadb5c1e36c55d66a744187a3cd'
     binary = $Build
     executable_sha256 = (Get-FileHash -LiteralPath (Join-Path $sessionRoot 'skate3.exe')).Hash
-    runtime_sha256 = (Get-FileHash -LiteralPath (Join-Path $sessionRoot 'rexruntime.dll')).Hash
+    runtime_file = $runtimeName
+    runtime_sha256 = (Get-FileHash -LiteralPath (Join-Path $sessionRoot $runtimeName)).Hash
     input = $InputMethod
     prepared_at = (Get-Date -Format o)
 } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $sessionRoot 'session.json') -Encoding utf8

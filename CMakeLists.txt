@@ -241,6 +241,7 @@ include(cmake/CodegenTargets.cmake)
 
 set(SKATE3_COMMON_SOURCES
     src/exception_compat.cpp
+    src/skate3_math_compat.cpp
     src/skate3_app_common.cpp
     src/skate3_demo_path.cpp
     src/skate3_draw_distance.cpp
@@ -279,7 +280,9 @@ if(WIN32)
         ${CMAKE_CURRENT_BINARY_DIR}/skate3_app.manifest
         COPYONLY
     )
-    target_link_options(skate3 PRIVATE LINKER:/MANIFESTINPUT:skate3_app.manifest)
+    # Let CMake's Windows manifest step merge and embed the application
+    # manifest. Passing /MANIFESTINPUT directly conflicts with its lld step.
+    target_sources(skate3 PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/skate3_app.manifest")
     configure_file(
         ${CMAKE_CURRENT_SOURCE_DIR}/src/skate3.rc.in
         ${CMAKE_CURRENT_BINARY_DIR}/skate3.rc
@@ -396,4 +399,12 @@ if(MSVC)
     target_compile_options(skate3 PRIVATE /utf-8)
 else()
     target_compile_options(skate3 PRIVATE -finput-charset=UTF-8 -fexec-charset=UTF-8)
+endif()
+
+if(WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    add_executable(skate3_math_compat_test EXCLUDE_FROM_ALL
+        phase1/tests/math_compat_test.cpp
+        src/skate3_math_compat.cpp)
+    target_compile_options(skate3_math_compat_test PRIVATE
+        $<IF:$<STREQUAL:${CMAKE_CXX_COMPILER_FRONTEND_VARIANT},MSVC>,/clang:-ffp-model=strict,-ffp-model=strict>)
 endif()

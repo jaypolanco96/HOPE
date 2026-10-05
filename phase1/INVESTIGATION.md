@@ -26,7 +26,7 @@ Player reports controller input. Audio/background behavior and exact selections 
 
 ## First source change
 
-The frontend state probe now logs paired begin/returned events with a sequence number, previous requested state, and elapsed time. This can distinguish repeated/reentrant requests from a transition call that never returns. A returned event means only that the function returned, not that menu initialization succeeded. The patch is opt-in and does not alter guest input or menu decisions. It is not compiled or runtime-validated yet.
+The frontend state probe now logs paired begin/returned events with a sequence number, previous requested state, and elapsed time. This can distinguish repeated/reentrant requests from a transition call that never returns. A returned event means only that the function returned, not that menu initialization succeeded. The patch is opt-in and does not alter guest input or menu decisions. The full diagnostic executable has compiled and linked successfully; runtime validation is pending.
 
 ## Isolated reproduction
 
@@ -42,10 +42,10 @@ Record every attempt in `REPRODUCTION.csv`; use `not_run` until actually tested.
 
 ## Build readiness
 
-CMake and Ninja are available. LLVM 23.1.2 is now installed and the existing Visual Studio x64 tools/Windows SDK have been configured. The TU3 package has been downloaded and its extracted payload hashes verified against upstream's required constants. Build configuration succeeds; code-generation tools are being compiled separately from the installed binaries.
+CMake and Ninja are available. LLVM 23.1.2 is now installed and the existing Visual Studio x64 tools/Windows SDK have been configured. The TU3 package has been downloaded and its extracted payload hashes verified against upstream's required constants. Code generation, compilation, and linking have completed successfully in the isolated build directory.
 
 The SDK's ImGui pin is unpublished. A documented diagnostic-build workaround uses the SDK's earlier published ImGui pin and omits its two custom font-gamma assignments. Other dependencies are initialized. See `BUILD-NOTES.md` and `sdk-build-compatibility.patch` for the exact deviation; this diagnostic build is not claimed to reproduce the release byte-for-byte.
 
-Validation completed: the session helper successfully prepared Saved/Native and Fresh/Emulated sessions; source whitespace checks passed. Runtime reproduction and compiled-patch validation remain outstanding.
+Validation completed: code-generation targets and the diagnostic executable build passed; the rounding compatibility test passed 199,260 exact-result checks plus NaN checks; the executable imports the expected diagnostic runtime DLL; its embedded manifest preserves supported Windows versions, common controls, and PerMonitorV2 DPI awareness. Four fresh diagnostic sessions (Native/Emulated, Controller/Keyboard) have been prepared with matching binary hashes. Source whitespace checks passed. Runtime reproduction and menu-fix verification remain outstanding.
 
-Next: finish the diagnostic build, collect paired Native/Emulated reproductions, identify the failing state/resource, and make a focused fix. Computer-use approval is pending after automatic review rejected access to the isolated test window. Phase 1 remains open until the roadmap completion gate passes.
+Next: collect paired Native/Emulated reproductions, identify the failing state/resource, and make a focused fix. Computer-use approval is pending after automatic review rejected access to the isolated test window. Phase 1 remains open until the roadmap completion gate passes.
