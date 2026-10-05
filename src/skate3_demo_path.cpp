@@ -56,6 +56,7 @@ constexpr uint32_t kFrontEndStatePressStart = 24;
 constexpr uint32_t kFrontEndStateLanguageSelect = 47;
 
 std::atomic<uint32_t> g_last_requested_state{0};
+std::atomic<uint64_t> g_frontend_transition_sequence{0};
 std::atomic<bool> g_seen_language_update{false};
 std::atomic<uint32_t> g_last_language_select_event{std::numeric_limits<uint32_t>::max()};
 std::atomic<uint32_t> g_last_press_start_event{std::numeric_limits<uint32_t>::max()};
@@ -158,15 +159,30 @@ extern "C" REX_FUNC(Skate3DemoPath_SetFrontEndStateHook) {
   const uint32_t state_id = ctx.r4.u32;
   const uint32_t mode = ctx.r5.u32;
   const uint32_t caller_lr = ctx.lr;
+  const bool probe_enabled = ProbeEnabled();
+  uint64_t sequence = 0;
+  std::chrono::steady_clock::time_point started;
 
-  if (ProbeEnabled()) {
-    g_last_requested_state.store(state_id, std::memory_order_relaxed);
+  if (probe_enabled) {
+    started = std::chrono::steady_clock::now();
+    sequence = g_frontend_transition_sequence.fetch_add(1, std::memory_order_relaxed) + 1;
+    const uint32_t previous = g_last_requested_state.exchange(state_id, std::memory_order_relaxed);
     REXLOG_INFO(
-        "Skate 3 demo path: FE SetState state={} ({}) mode={} manager=0x{:08X} lr=0x{:08X}",
-        state_id, KnownFrontEndStateName(state_id), mode, manager, caller_lr);
+        "Skate 3 demo path: FE SetState begin sequence={} previous_requested={} state={} ({}) "
+        "mode={} manager=0x{:08X} lr=0x{:08X}",
+        sequence, previous, state_id, KnownFrontEndStateName(state_id), mode, manager, caller_lr);
   }
 
   sub_82D0AFA0(ctx, base);
+
+  if (probe_enabled) {
+    const auto elapsed_us = std::chrono::duration_cast<std::chrono::microseconds>(
+        std::chrono::steady_clock::now() - started).count();
+    REXLOG_INFO(
+        "Skate 3 demo path: FE SetState returned sequence={} state={} manager=0x{:08X} "
+        "elapsed_us={}",
+        sequence, state_id, manager, elapsed_us);
+  }
 }
 
 extern "C" REX_FUNC(Skate3DemoPath_LanguageSelectStateHook) {

@@ -1,0 +1,5 @@
+case_id,profile,renderer,input,confirm_style,difficulty,camera,result,blank_time,audio_continues,background_continues,back_responds,f5_result,log_path
+P1-001,Saved,Native,controller,deliberate,unknown,unknown,not_run,,,,,,
+P1-002,Saved,Emulated,controller,deliberate,unknown,unknown,not_run,,,,,,
+P1-003,Fresh,Native,controller,deliberate,unknown,unknown,not_run,,,,,,
+P1-004,Fresh,Emulated,controller,deliberate,unknown,unknown,not_run,,,,,,
