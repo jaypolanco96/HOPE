@@ -259,6 +259,12 @@ public partial class MainWindow : Window, IDisposable
     });
     private void OpenCareer_Click(object sender, RoutedEventArgs e) => Run(() =>
         Process.Start(new ProcessStartInfo(state.ActiveRoot) { UseShellExecute = true })?.Dispose());
+    private void OpenCaptures_Click(object sender, RoutedEventArgs e) => Run(() =>
+    {
+        var folder = Path.Combine(state.ActiveRoot, "cache", "performance");
+        if (!Directory.Exists(folder)) { Feedback.Text = "No captures yet. Press F8 in game to start, then F8 again to save. If your cache is elsewhere, the game log lists its capture location."; return; }
+        Process.Start(new ProcessStartInfo(folder) { UseShellExecute = true })?.Dispose();
+    });
     private void SaveGraphics_Click(object sender, RoutedEventArgs e) => Run(() =>
     {
         RequireGameClosed();

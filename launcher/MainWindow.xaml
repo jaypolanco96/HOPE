@@ -150,7 +150,7 @@
           <TextBlock Text="Choose a backup from before the problem" Foreground="{StaticResource Mint}" Margin="0,8,0,0"/>
           <ComboBox x:Name="BackupCombo" AutomationProperties.Name="Settings backup"/>
           <TextBlock x:Name="BackupStatus" Text="No settings backups yet. Resetting settings creates one." Foreground="{StaticResource Mint}" FontSize="14" Margin="0,8,0,14" Visibility="Collapsed"/>
-          <WrapPanel><Button x:Name="RestoreSettingsButton" Content="Restore selected backup" Click="RestoreSettings_Click" Margin="0,0,12,10"/><Button Content="Open career folder" Click="OpenCareer_Click"/></WrapPanel>
+          <WrapPanel><Button x:Name="RestoreSettingsButton" Content="Restore selected backup" Click="RestoreSettings_Click" Margin="0,0,12,10"/><Button Content="Open career folder" Click="OpenCareer_Click" Margin="0,0,12,10"/><Button Content="Open performance captures" Click="OpenCaptures_Click"/></WrapPanel>
           <TextBlock Text="Current settings are backed up before restoration. A backup may contain the original problem; reset again or choose an earlier backup if needed. Hardware performance presets will follow measured testing." TextWrapping="Wrap" Foreground="#C8BED9" FontSize="14"/>
          </StackPanel>
          <StackPanel x:Name="CreditsPanel" Visibility="Collapsed">

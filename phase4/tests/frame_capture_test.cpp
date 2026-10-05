@@ -47,6 +47,7 @@ int main() {
     auto file = *std::filesystem::directory_iterator(destination);
     std::ifstream in(file.path());
     std::string text((std::istreambuf_iterator<char>(in)), {});
+    in.close();
     require(text.find("# fixture=synthetic") != std::string::npos && text.find("gameplay_context,renderer,transition") != std::string::npos, "Capture metadata and schema preserved");
     require(text.find(",1,Native,0") != std::string::npos, "Recorded sample survives failed write");
     require(capture::Finish().empty(), "Completed capture is not saved twice");

@@ -45,3 +45,5 @@ The runnable launcher requires the .NET 8 Windows Desktop runtime, already avail
 Phase 3 adds Help & recovery, reversible selected-career settings reset/restore, fullscreen/VSync/FPS preferences, active-input prompts and controller reconnect protection. See ../phase3/README.md. Live game launch/ISO installation, hardware controls, difficulty/camera persistence and the original intermittent difficulty-screen defect still require runtime validation. Measured presets await Phase 4.
 
 PC controls correction: Start opens the original Skate 3 menu. Escape or RB + Start opens HOPE settings. Return to HOPE Launcher closes the session; actual Skate 3 title-screen return remains unimplemented. See ../pc-gameplay-menu/README.md and ACTUAL-MENU-INVESTIGATION.md.
+
+Phase 4 starts with optional F8 timing captures and Open performance captures in Help. Captures are bounded and do not run in normal play until enabled. Python 3 is needed only for the separate analysis script, not for playing/capturing. See ../phase4/README.md for instructions and the guest-cadence measurement limits.
