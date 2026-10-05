@@ -62,3 +62,16 @@ The first two sessions both contain frontend stack progression `[0,9]` → `[0]`
 ## Runtime access
 
 Computer-use access to the isolated `skate3` test window was rejected by automatic approval review with no further reason. Explicit user approval has been requested. No UI input was sent and no runtime reproduction is claimed.
+
+## PC-friendly preview build
+
+The requested pre-Phase-2 PC menu/save/graphics update built successfully from app commit `5f20469` and SDK commit `078b08a`. Final build output is `out/build/phase1`; the runnable preview is `C:\GOG Games\Skate3Recomp-Windows\PC-Friendly-Preview`. This remains a RelWithDebInfo diagnostic build with the ImGui compatibility deviation described above.
+
+Validation: 33 core save fixture checks plus four junction checks passed (37 total); graphics settings round-trip/preservation checks passed against the compiled runtime. The symbolic-link fixture was unavailable due Windows account privileges; separate Windows junction fixtures exercised reparse-point rejection. No real save was removed. Three current career/metadata files were copied with matching before/after/source/destination hashes while no game process was detected. Installed binary hashes still match the baseline.
+
+Preview SHA-256:
+
+- `skate3.exe`: `92a32ffb76c889b1273501361eb660cddd52798c39eb8496536be0a9b80761d2`
+- `rexruntimerd.dll`: `4d744107bb9f5d0545b284dddc5b5d497e16260f4e98d8b7dc6319582c9bb0ef`
+
+Live UI and difficulty-screen reproduction remain outstanding; see `PC-UI-CHECKS.csv` and `REPRODUCTION.csv`. Phase 2 has not started.

@@ -2,6 +2,10 @@
 
 This preview adds a PC menu around the existing game. Phase 2 has not started, and the intermittent blank difficulty screen remains under investigation.
 
+## Launch the preview
+
+In File Explorer, open `C:\GOG Games\Skate3Recomp-Windows\PC-Friendly-Preview\skate3.exe`. This folder contains the new executable and its matching runtime, settings, and a hash-verified copy of the latest career save. The installed executable and original career remain separate. Do not run the installed game and preview together.
+
 ## Controls
 
 Press **Escape**, **F1**, or **RB + Start** on the controller to open the PC menu (the controller shortcut can be changed under Controls). **Home** returns directly to its Main Menu page. Navigate using the mouse, arrow keys and Enter, or the controller's D-pad and A/B buttons.
@@ -28,4 +32,6 @@ Missing/inaccessible paths, links/junctions, unsafe package names, and invalid m
 
 The save manager has passed 37 fixture checks covering original and portable layouts, latest save bytes, metadata, unrelated saves, invalid names, locked data, metadata rollback, and junction rejection. Symbolic-link creation is unavailable on this Windows account; junction fixtures tested the Windows reparse-point rejection path instead. Real player saves have not been removed by development tools.
 
-Build, graphics persistence, and game-window validation status will be recorded here when completed. The game-window automation was rejected by automatic approval review in the preceding investigation; do not treat a successful compilation as live UI verification.
+The final Windows executable and matching runtime built successfully from source commit `5f20469` and SDK commit `078b08a`. The actual settings writer/loader passed a round-trip test for MSAA, AO, AO quality, fog, haze, and sun shafts while preserving an unrelated setting. The packaged binary/runtime hashes match the build, the executable imports the expected diagnostic DLL, and the copied career files match the originals. Source whitespace checks passed.
+
+Live game-window checks remain unrun in `PC-UI-CHECKS.csv`: automatic approval review rejected game-window control in the preceding investigation. Compilation and fixture tests do not establish visual quality, controller navigation, shutdown behavior in a real session, or save restore compatibility in the game. Use the preview for these checks before replacing the installed version.
