@@ -25,6 +25,7 @@ public static class ModTests
         var manifest = """{"formatVersion":1,"id":"custom-view","name":"Custom View","author":"Fixture","description":"Custom camera","settings":{"skate3_field_of_view":80}}""";
         var imported = Path.Combine(root,"custom.hope-mod.json"); File.WriteAllText(imported,manifest);
         manager.Import(imported);
+        check(ModManager.Parse("\uFEFF" + manifest).Id == "custom-view", "UTF-8 BOM manifests import correctly");
         check(manager.List().Count==6 && !manager.List().Last().Enabled,"Imported mod starts disabled");
         var before=File.ReadAllBytes(settings);
         bool rejected=false; try{manager.Apply(["wide-streets","custom-view"]);}catch(Exception e) when(e is IOException or UnauthorizedAccessException){rejected=true;}

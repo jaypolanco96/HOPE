@@ -73,6 +73,7 @@ public sealed class ModManager(string bundleRoot, string careerRoot, Func<bool> 
     public static ModDefinition Parse(string content)
     {
         if (Encoding.UTF8.GetByteCount(content) > 65536) throw new InvalidDataException("Mod files must be smaller than 64 KB.");
+        content = content.TrimStart('\uFEFF');
         using var document = JsonDocument.Parse(content); UniqueProperties(document.RootElement);
         var mod = JsonSerializer.Deserialize<ModDefinition>(content, Json) ?? throw new InvalidDataException("Empty mod file.");
         if (mod.FormatVersion != 1 || !Regex.IsMatch(mod.Id ?? "", "^[a-z][a-z0-9-]{2,63}$")) throw new InvalidDataException("Unsupported mod version or ID.");
