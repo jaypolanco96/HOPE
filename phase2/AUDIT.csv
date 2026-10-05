@@ -1,0 +1,14 @@
+flow,coverage,result,remaining
+Startup,Launcher 51 fixtures plus native profile checks,Pass isolated checks,Live startup
+Continue existing career,Main career bytes and XUID retained,Pass compatibility fixtures,Live continue and load
+New career,Separate portable saves and settings with retained main career,Pass isolation fixtures,Live difficulty camera and gameplay
+Save load,33 archive checks plus 16 profile persistence checks,Pass fixture checks,Multiple actual save reload cycles
+Pause resume,Menu input gate source audited,No gameplay validation,Live pause resume
+Challenge restart,No patch speculative guest state changes,Open runtime audit,Live challenge restart
+Camera changes,No patch to guest camera state,Open runtime audit,Live camera choices
+Replay,No patch to guest replay state,Open runtime audit,Live replay
+Display changes,Graphics writer persistence checks,Pass persistence fixtures,Live display toggles
+Controller reconnect,XInput launcher polling and runtime callback source reviewed,No hardware validation,Live reconnect
+Quit return Home,Queued Home launch after runtime destruction with confirmation,Build passes,Live Home activation and closed-launcher reopen
+Restart,Queued Windows restart after runtime destruction,Build passes,Live restart save compatibility
+Shutdown errors,Address region diagnostics and session analysis,Four errors after closing marker,Collect current runtime ownership trace

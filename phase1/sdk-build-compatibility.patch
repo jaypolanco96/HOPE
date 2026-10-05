@@ -61,7 +61,7 @@ index 5c5f92f..1827257 100644
                                                     XContentType content_type,
                                                     uint32_t title_id = -1);
 diff --git a/include/rex/ui/overlay/simple_settings_overlay.h b/include/rex/ui/overlay/simple_settings_overlay.h
-index e4d1c0c..a3afbe8 100644
+index e4d1c0c..0d599cb 100644
 --- a/include/rex/ui/overlay/simple_settings_overlay.h
 +++ b/include/rex/ui/overlay/simple_settings_overlay.h
 @@ -30,6 +30,11 @@ struct SimpleProfileState {
@@ -92,17 +92,21 @@ index e4d1c0c..a3afbe8 100644
  
    SimpleSettingsDialog(ImGuiDrawer* drawer, std::filesystem::path config_path,
                         LoadProfilesCallback load_profiles, SaveProfileCallback save_profile,
-@@ -64,6 +72,8 @@ class SimpleSettingsDialog final : public ImGuiDialog {
+@@ -64,6 +72,9 @@ class SimpleSettingsDialog final : public ImGuiDialog {
    // level instead of instantly closing.
    void NavigateBack();
    bool visible() const { return visible_; }
 +  void SetSaveCallbacks(LoadSavesCallback load, DeleteSaveCallback remove);
 +  void ShowMainMenu();
++  void SetReturnHomeCallback(CloseGameCallback callback) { return_home_ = std::move(callback); }
  
   protected:
    void OnDraw(ImGuiIO& io) override;
-@@ -91,6 +101,14 @@ class SimpleSettingsDialog final : public ImGuiDialog {
+@@ -89,8 +100,18 @@ class SimpleSettingsDialog final : public ImGuiDialog {
+   SaveProfileCallback save_profile_;
+   CloseSettingsCallback close_settings_;
    CloseGameCallback close_game_;
++  CloseGameCallback return_home_;
    RestartGameCallback restart_game_;
    PollGamepadCallback poll_gamepad_;
 +  LoadSavesCallback load_saves_;
@@ -113,10 +117,11 @@ index e4d1c0c..a3afbe8 100644
 +  std::string save_error_;
 +  std::string profile_save_status_;
 +  bool quit_confirmation_ = false;
++  bool return_home_confirmation_ = false;
    SimpleProfileState profiles_;
    bool visible_ = false;
  
-@@ -118,6 +136,9 @@ class SimpleSettingsDialog final : public ImGuiDialog {
+@@ -118,6 +139,9 @@ class SimpleSettingsDialog final : public ImGuiDialog {
    // Live setting values (hot cvars, applied and saved on change).
    bool renderer_native_ = true;
    bool ssao_ = true;
@@ -194,7 +199,7 @@ index 50a26d0..5af18d6 100644
          GetInterRegularCompressedBase85(), 18.0f, &config_on_light);
      ui_font_semibold_on_light_ = io.Fonts->AddFontFromMemoryCompressedBase85TTF(
 diff --git a/src/ui/overlay/simple_settings_overlay.cpp b/src/ui/overlay/simple_settings_overlay.cpp
-index c22345f..ca85964 100644
+index c22345f..6dec3f7 100644
 --- a/src/ui/overlay/simple_settings_overlay.cpp
 +++ b/src/ui/overlay/simple_settings_overlay.cpp
 @@ -54,7 +54,7 @@ constexpr std::array<std::string_view, 7> kCoreSimpleSettingsCvars = {
@@ -222,7 +227,7 @@ index c22345f..ca85964 100644
 -constexpr std::array<CategoryInfo, 5> kCategories = {{
 -    {"Video", "Display, resolution, framerate and renderer quality settings."},
 +constexpr std::array<CategoryInfo, 8> kCategories = {{
-+    {"Main Menu", "Resume, restart, or quit to desktop. The game continues running behind this PC menu."},
++    {"HOPE Menu", "Resume, return to HOPE Home, restart, or quit. The game continues running behind this PC menu."},
 +    {"Display", "Display, resolution and framerate settings."},
 +    {"Graphics", "Anti-aliasing, ambient occlusion, fog, lighting and shadows."},
      {"Controls", "Controller, mouse and keyboard input settings."},
@@ -231,12 +236,13 @@ index c22345f..ca85964 100644
      {"Profile", "Local player profile and sign-in."},
      {"System", "Game language, pending changes and closing the settings."},
  }};
-@@ -996,6 +1001,12 @@ void SimpleSettingsDialog::Show() {
+@@ -996,6 +1001,13 @@ void SimpleSettingsDialog::Show() {
    SetDrawActive(true);
    ReloadProfiles();
    LoadSettingsFromCvars();
 +  category_ = 0;
 +  quit_confirmation_ = false;
++  return_home_confirmation_ = false;
 +  delete_confirmation_.clear();
 +  save_error_.clear();
 +  saves_ = load_saves_ ? load_saves_() : std::vector<SimpleSaveInfo>{};
@@ -244,7 +250,7 @@ index c22345f..ca85964 100644
    zone_ = FocusZone::kRail;
    rail_sel_ = category_;
    row_index_ = 0;
-@@ -1008,6 +1019,21 @@ void SimpleSettingsDialog::Show() {
+@@ -1008,6 +1020,22 @@ void SimpleSettingsDialog::Show() {
    just_shown_ = true;          // swallow the stale cursor delta too
  }
  
@@ -258,6 +264,7 @@ index c22345f..ca85964 100644
 +  row_index_ = 0;
 +  zone_ = FocusZone::kRail;
 +  quit_confirmation_ = false;
++  return_home_confirmation_ = false;
 +  delete_confirmation_.clear();
 +  content_scroll_ = content_scroll_anim_ = 0.0f;
 +  highlight_anim_y_ = rail_anim_y_ = -1.0f;
@@ -266,7 +273,7 @@ index c22345f..ca85964 100644
  void SimpleSettingsDialog::LoadSettingsFromCvars() {
    device_list_ = GetGraphicsDeviceList();
    graphics_api_index_ = HasGraphicsApiChoice() ? GraphicsApiIndexFromCvar() : 0;
-@@ -1032,6 +1058,12 @@ void SimpleSettingsDialog::LoadSettingsFromCvars() {
+@@ -1032,6 +1060,12 @@ void SimpleSettingsDialog::LoadSettingsFromCvars() {
        HasCvar("skate3_native_render_scene") && rex::cvar::Query<bool>("skate3_native_render_scene");
    ssao_ = HasCvar("skate3_native_render_scene_ssao") &&
            rex::cvar::Query<bool>("skate3_native_render_scene_ssao");
@@ -279,7 +286,7 @@ index c22345f..ca85964 100644
    static_shadows_ =
        HasCvar("skate3_native_render_scene_shadow_static_casters") &&
        rex::cvar::Query<bool>("skate3_native_render_scene_shadow_static_casters");
-@@ -1039,12 +1071,9 @@ void SimpleSettingsDialog::LoadSettingsFromCvars() {
+@@ -1039,12 +1073,9 @@ void SimpleSettingsDialog::LoadSettingsFromCvars() {
                   rex::cvar::Query<bool>("skate3_native_render_scene_shadow_pcss");
    bloom_ = HasCvar("skate3_native_render_scene_bloom") &&
             rex::cvar::Query<bool>("skate3_native_render_scene_bloom");
@@ -294,19 +301,20 @@ index c22345f..ca85964 100644
    draw_distance_index_ = DrawDistanceIndexFromCvar();
    stream_probe_index_ = StreamProbeIndexFromCvar();
    mode_indicator_ = HasCvar("skate3_native_render_mode_indicator") &&
-@@ -1106,6 +1135,11 @@ void SimpleSettingsDialog::NavigateBack() {
+@@ -1106,6 +1137,12 @@ void SimpleSettingsDialog::NavigateBack() {
    if (!visible_) {
      return;
    }
-+  if (!delete_confirmation_.empty() || quit_confirmation_) {
++  if (!delete_confirmation_.empty() || quit_confirmation_ || return_home_confirmation_) {
 +    delete_confirmation_.clear();
 +    quit_confirmation_ = false;
++    return_home_confirmation_ = false;
 +    return;
 +  }
    if (editing_text_) {
      editing_text_ = false;
      return;
-@@ -1237,9 +1271,14 @@ void SimpleSettingsDialog::SaveVideo() {
+@@ -1237,9 +1274,14 @@ void SimpleSettingsDialog::SaveVideo() {
  
  void SimpleSettingsDialog::SaveProfile() {
    if (save_profile_) {
@@ -322,7 +330,7 @@ index c22345f..ca85964 100644
  }
  
  void SimpleSettingsDialog::ApplyAndRestart() {
-@@ -1266,7 +1305,36 @@ void SimpleSettingsDialog::BuildRows(std::vector<RowSpec>& rows, int category) {
+@@ -1266,7 +1308,43 @@ void SimpleSettingsDialog::BuildRows(std::vector<RowSpec>& rows, int category) {
    };
  
    switch (category) {
@@ -338,18 +346,25 @@ index c22345f..ca85964 100644
 +        row.danger = danger;
 +        rows.push_back(std::move(row));
 +      };
-+      if (quit_confirmation_) {
++      if (return_home_confirmation_) {
++        action("Keep Playing", "Return to this session.",
++               [this] { return_home_confirmation_ = false; });
++        action("Confirm Return to HOPE Home", "Close this session and open the launcher. Wait for the saving indicator to finish. Unsaved progress may be lost.",
++               [this] { return_home_confirmation_ = false; Hide(); if (return_home_) return_home_(); }, true);
++      } else if (quit_confirmation_) {
 +        action("Cancel", "Keep playing. Unsaved progress can be lost when quitting.",
 +               [this] { quit_confirmation_ = false; });
 +        action("Confirm Quit to Desktop", "Close the game. Wait for the game's saving indicator to finish first.",
 +               [this] { Hide(); if (close_game_) close_game_(); }, true);
 +      } else {
 +        action("Resume Game", "Return to your current session.", [this] { Hide(); });
++        if (return_home_) action("Return to HOPE Home", "Close this session and return to the launcher, even with an existing career. Your saved career is retained.",
++               [this] { return_home_confirmation_ = true; row_index_ = 0; });
 +        action("Graphics Settings", "Adjust ambient occlusion, anti-aliasing, fog and other effects.",
 +               [this] { category_ = rail_sel_ = 2; row_index_ = 0; });
 +        action("Manage Saves", "View and remove saves for the selected profile.",
 +               [this] { category_ = rail_sel_ = 5; row_index_ = 0; });
-+        action("Restart Game", "Restart from the title screen. Unsaved progress may be lost; finish saving first.",
++        action("Restart Game", "Relaunch the game; an existing career may load again. To choose or create a career, return to HOPE Home. Finish saving first.",
 +               [this] { quit_confirmation_ = false; Hide(); if (restart_game_) restart_game_(); });
 +        action("Quit to Desktop", "Close the game after confirmation.",
 +               [this] { quit_confirmation_ = true; row_index_ = 0; }, true);
@@ -360,7 +375,7 @@ index c22345f..ca85964 100644
        header("Display");
        if (HasGraphicsApiChoice()) {
          RowSpec row;
-@@ -1446,6 +1514,9 @@ void SimpleSettingsDialog::BuildRows(std::vector<RowSpec>& rows, int category) {
+@@ -1446,6 +1524,9 @@ void SimpleSettingsDialog::BuildRows(std::vector<RowSpec>& rows, int category) {
          row.reset = [this] { tearing_ = TearingDefault(); };
          rows.push_back(std::move(row));
        }
@@ -370,7 +385,7 @@ index c22345f..ca85964 100644
        if (HasRendererChoice() || HasMsaaCvar() || HasShadowQualityCvars() ||
            HasCvar("skate3_native_render_scene_ssao") || HasDrawDistanceCvars()) {
          header("Graphics");
-@@ -1455,8 +1526,8 @@ void SimpleSettingsDialog::BuildRows(std::vector<RowSpec>& rows, int category) {
+@@ -1455,8 +1536,8 @@ void SimpleSettingsDialog::BuildRows(std::vector<RowSpec>& rows, int category) {
          row.kind = RowSpec::kEnum;
          row.label = "Renderer";
          row.desc =
@@ -381,7 +396,7 @@ index c22345f..ca85964 100644
          row.options = {"Emulated", "Native"};
          row.flag = &renderer_native_;
          row.on_enum_change = [this](int value) {
-@@ -1474,16 +1545,23 @@ void SimpleSettingsDialog::BuildRows(std::vector<RowSpec>& rows, int category) {
+@@ -1474,16 +1555,23 @@ void SimpleSettingsDialog::BuildRows(std::vector<RowSpec>& rows, int category) {
          RowSpec row;
          row.kind = RowSpec::kEnum;
          row.label = "Anti-Aliasing (MSAA)";
@@ -406,7 +421,7 @@ index c22345f..ca85964 100644
          };
          rows.push_back(std::move(row));
        }
-@@ -1491,6 +1569,7 @@ void SimpleSettingsDialog::BuildRows(std::vector<RowSpec>& rows, int category) {
+@@ -1491,6 +1579,7 @@ void SimpleSettingsDialog::BuildRows(std::vector<RowSpec>& rows, int category) {
          RowSpec row;
          row.kind = RowSpec::kEnum;
          row.label = "Shadow Quality";
@@ -414,7 +429,7 @@ index c22345f..ca85964 100644
          row.desc =
              "Dynamic character/prop shadow resolution in the native renderer. "
              "Auto follows the Render Scale setting; 512 matches the original "
-@@ -1524,6 +1603,7 @@ void SimpleSettingsDialog::BuildRows(std::vector<RowSpec>& rows, int category) {
+@@ -1524,6 +1613,7 @@ void SimpleSettingsDialog::BuildRows(std::vector<RowSpec>& rows, int category) {
          RowSpec row;
          row.kind = RowSpec::kEnum;
          row.label = "Enhanced Shadows";
@@ -422,7 +437,7 @@ index c22345f..ca85964 100644
          row.desc =
              "Real-time sun shadows cast by buildings, trees and props from a "
              "dedicated sun-aligned shadow map; the original game only bakes "
-@@ -1549,6 +1629,7 @@ void SimpleSettingsDialog::BuildRows(std::vector<RowSpec>& rows, int category) {
+@@ -1549,6 +1639,7 @@ void SimpleSettingsDialog::BuildRows(std::vector<RowSpec>& rows, int category) {
          RowSpec row;
          row.kind = RowSpec::kEnum;
          row.label = "Enhanced Shadow Resolution";
@@ -430,7 +445,7 @@ index c22345f..ca85964 100644
          row.desc =
              "Resolution per cascade of the enhanced shadow map. Higher is "
              "sharper at distance but uses more video memory (roughly 50 MB "
-@@ -1568,6 +1649,7 @@ void SimpleSettingsDialog::BuildRows(std::vector<RowSpec>& rows, int category) {
+@@ -1568,6 +1659,7 @@ void SimpleSettingsDialog::BuildRows(std::vector<RowSpec>& rows, int category) {
          RowSpec row;
          row.kind = RowSpec::kEnum;
          row.label = "PCSS Shadows";
@@ -438,7 +453,7 @@ index c22345f..ca85964 100644
          row.desc =
              "Contact-hardening soft shadows (PCSS): crisp where a shadow "
              "meets its caster, progressively softer with distance, following "
-@@ -1592,6 +1674,7 @@ void SimpleSettingsDialog::BuildRows(std::vector<RowSpec>& rows, int category) {
+@@ -1592,6 +1684,7 @@ void SimpleSettingsDialog::BuildRows(std::vector<RowSpec>& rows, int category) {
          RowSpec row;
          row.kind = RowSpec::kEnum;
          row.label = "Ambient Occlusion";
@@ -446,7 +461,7 @@ index c22345f..ca85964 100644
          row.desc =
              "Ground-truth ambient occlusion (GTAO): soft contact shading "
              "where surfaces meet (under ledges, rails, vehicles, the "
-@@ -1613,6 +1696,7 @@ void SimpleSettingsDialog::BuildRows(std::vector<RowSpec>& rows, int category) {
+@@ -1613,6 +1706,7 @@ void SimpleSettingsDialog::BuildRows(std::vector<RowSpec>& rows, int category) {
          RowSpec row;
          row.kind = RowSpec::kEnum;
          row.label = "Bloom";
@@ -454,7 +469,7 @@ index c22345f..ca85964 100644
          row.desc =
              "Glow around bright light sources (lamps, neon, the sun and "
              "sky glare), driven by real scene brightness. Most visible at "
-@@ -1630,40 +1714,62 @@ void SimpleSettingsDialog::BuildRows(std::vector<RowSpec>& rows, int category) {
+@@ -1630,40 +1724,62 @@ void SimpleSettingsDialog::BuildRows(std::vector<RowSpec>& rows, int category) {
          };
          rows.push_back(std::move(row));
        }
@@ -531,7 +546,7 @@ index c22345f..ca85964 100644
        if (HasDrawDistanceCvars()) {
          RowSpec row;
          row.kind = RowSpec::kEnum;
-@@ -1794,7 +1900,7 @@ void SimpleSettingsDialog::BuildRows(std::vector<RowSpec>& rows, int category) {
+@@ -1794,7 +1910,7 @@ void SimpleSettingsDialog::BuildRows(std::vector<RowSpec>& rows, int category) {
        }
        break;
      }
@@ -540,7 +555,7 @@ index c22345f..ca85964 100644
        header("Mouse & Keyboard");
        {
          RowSpec row;
-@@ -1918,7 +2024,7 @@ void SimpleSettingsDialog::BuildRows(std::vector<RowSpec>& rows, int category) {
+@@ -1918,7 +2034,7 @@ void SimpleSettingsDialog::BuildRows(std::vector<RowSpec>& rows, int category) {
        }
        break;
      }
@@ -549,7 +564,7 @@ index c22345f..ca85964 100644
        header("Output");
        if (HasCvar("audio_mute")) {
          RowSpec row;
-@@ -1966,7 +2072,61 @@ void SimpleSettingsDialog::BuildRows(std::vector<RowSpec>& rows, int category) {
+@@ -1966,7 +2082,61 @@ void SimpleSettingsDialog::BuildRows(std::vector<RowSpec>& rows, int category) {
        }
        break;
      }
@@ -612,7 +627,7 @@ index c22345f..ca85964 100644
        header("Local Profile");
        {
          RowSpec row;
-@@ -2008,12 +2168,13 @@ void SimpleSettingsDialog::BuildRows(std::vector<RowSpec>& rows, int category) {
+@@ -2008,12 +2178,13 @@ void SimpleSettingsDialog::BuildRows(std::vector<RowSpec>& rows, int category) {
          row.kind = RowSpec::kAction;
          row.label = "Save Profile";
          row.desc = "Save the profile changes above and apply them to the running game.";
@@ -627,37 +642,40 @@ index c22345f..ca85964 100644
        if (HasCvar("user_language")) {
          RowSpec row;
          row.kind = RowSpec::kEnum;
-@@ -2272,6 +2433,11 @@ void SimpleSettingsDialog::OnDraw(ImGuiIO& io) {
+@@ -2272,6 +2443,12 @@ void SimpleSettingsDialog::OnDraw(ImGuiIO& io) {
  
    // ---- Input ----
    NavIntents in = GatherInput(io);
-+  if (in.back && (!delete_confirmation_.empty() || quit_confirmation_)) {
++  if (in.back && (!delete_confirmation_.empty() || quit_confirmation_ || return_home_confirmation_)) {
 +    delete_confirmation_.clear();
 +    quit_confirmation_ = false;
++    return_home_confirmation_ = false;
 +    in.back = false;
 +  }
    if (editing_text_) {
      // The text field owns navigation; pad B cancels the edit.
      if (in.back) {
-@@ -2285,6 +2451,8 @@ void SimpleSettingsDialog::OnDraw(ImGuiIO& io) {
+@@ -2285,6 +2462,9 @@ void SimpleSettingsDialog::OnDraw(ImGuiIO& io) {
    // bottom (rail_sel_ == category_count).
    const int quit_rail_index = category_count;
    if (in.category_prev || in.category_next) {
 +    delete_confirmation_.clear();
 +    quit_confirmation_ = false;
++    return_home_confirmation_ = false;
      category_ = (category_ + (in.category_next ? 1 : category_count - 1)) % category_count;
      rail_sel_ = category_;
      row_index_ = 0;
-@@ -2293,6 +2461,8 @@ void SimpleSettingsDialog::OnDraw(ImGuiIO& io) {
+@@ -2293,6 +2473,9 @@ void SimpleSettingsDialog::OnDraw(ImGuiIO& io) {
      highlight_anim_y_ = -1.0f;
    }
    if (zone_ == FocusZone::kRail && in.move_y != 0) {
 +    delete_confirmation_.clear();
 +    quit_confirmation_ = false;
++    return_home_confirmation_ = false;
      rail_sel_ = std::clamp(rail_sel_ + in.move_y, 0, quit_rail_index);
      if (rail_sel_ < category_count && rail_sel_ != category_) {
        category_ = rail_sel_;
-@@ -2396,8 +2566,10 @@ void SimpleSettingsDialog::OnDraw(ImGuiIO& io) {
+@@ -2396,8 +2579,10 @@ void SimpleSettingsDialog::OnDraw(ImGuiIO& io) {
    if (zone_ == FocusZone::kRail) {
      if (rail_sel_ == quit_rail_index) {
        if (in.select && close_game_) {
@@ -670,7 +688,7 @@ index c22345f..ca85964 100644
        }
      } else if ((in.select || in.move_x > 0) && !selectable.empty()) {
        zone_ = FocusZone::kContent;
-@@ -2479,7 +2651,6 @@ void SimpleSettingsDialog::OnDraw(ImGuiIO& io) {
+@@ -2479,7 +2664,6 @@ void SimpleSettingsDialog::OnDraw(ImGuiIO& io) {
    // Gap is 1 design px tighter than the 6*s focus ring, so the ring slightly
    // overlaps neighbours - it draws above them.
    const float row_gap = Snap(5.0f * s);
@@ -678,7 +696,7 @@ index c22345f..ca85964 100644
    const float label_size = font_px(22.0f * s);
    const float value_size = font_px(22.0f * s);
    const float desc_size = font_px(20.0f * s);
-@@ -2503,6 +2674,9 @@ void SimpleSettingsDialog::OnDraw(ImGuiIO& io) {
+@@ -2503,6 +2687,9 @@ void SimpleSettingsDialog::OnDraw(ImGuiIO& io) {
        frame_pos.y + (frame_size.y - content_view_h) * 0.5f,
        std::min(frame_pos.y + 98.0f * s, columns_y_flow), content_bottom - content_view_h));
    const float title_y = Snap(columns_y - 74.0f * s);
@@ -688,7 +706,7 @@ index c22345f..ca85964 100644
    const float content_view_bottom = columns_y + content_view_h;
    // Description panel height - also anchors Close Game's bottom edge. When
    // the category rail is long enough to push Close Game below the panel's
-@@ -2510,7 +2684,7 @@ void SimpleSettingsDialog::OnDraw(ImGuiIO& io) {
+@@ -2510,7 +2697,7 @@ void SimpleSettingsDialog::OnDraw(ImGuiIO& io) {
    // the button's (the two columns read as one aligned baseline).
    const float rail_close_bottom =
        Snap(columns_y + category_count * (rail_item_h + row_gap) - row_gap +
@@ -697,7 +715,7 @@ index c22345f..ca85964 100644
        rail_item_h;
    const float desc_panel_h = Snap(std::min(
        content_bottom - columns_y,
-@@ -2549,7 +2723,7 @@ void SimpleSettingsDialog::OnDraw(ImGuiIO& io) {
+@@ -2549,7 +2736,7 @@ void SimpleSettingsDialog::OnDraw(ImGuiIO& io) {
    dl->AddRectFilled(ImVec2(0.0f, 0.0f), io.DisplaySize, IM_COL32(6, 9, 11, 133));
  
    // ---- Title ----
@@ -706,19 +724,20 @@ index c22345f..ca85964 100644
    if (pending) {
      const char* chip_text = "RESTART REQUIRED TO APPLY";
      float chip_size = font_px(14.0f * s);
-@@ -2578,6 +2752,11 @@ void SimpleSettingsDialog::OnDraw(ImGuiIO& io) {
+@@ -2578,6 +2765,12 @@ void SimpleSettingsDialog::OnDraw(ImGuiIO& io) {
        row_index_ = 0;
        content_scroll_ = 0.0f;
        content_scroll_anim_ = 0.0f;
 +      delete_confirmation_.clear();
 +      quit_confirmation_ = false;
++      return_home_confirmation_ = false;
 +      ImGui::End();
 +      ImGui::PopStyleVar(2);
 +      return;  // redraw the selected category before accepting row input
        is_current = true;
      }
      if (is_current && zone_ == FocusZone::kRail && rail_sel_ == i) {
-@@ -2642,20 +2821,24 @@ void SimpleSettingsDialog::OnDraw(ImGuiIO& io) {
+@@ -2642,20 +2835,24 @@ void SimpleSettingsDialog::OnDraw(ImGuiIO& io) {
      // layout had - with more categories the rail wins and pushes it down.
      const float rail_bottom = columns_y + category_count * (rail_item_h + row_gap) - row_gap;
      float y0 = Snap(std::max(columns_y + desc_panel_h - rail_item_h,

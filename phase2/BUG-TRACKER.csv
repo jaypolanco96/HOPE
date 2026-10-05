@@ -8,3 +8,5 @@ P2-006,Medium,Investigating,Invalid heap release at shutdown,Four recorded error
 P2-007,Unclassified,Open,Missing VFS requests,Session logs contain patch/debug/stategraph/save requests,Verify callers and fallbacks before changing resources
 P2-008,Medium,Fixed and fixture-tested,Damaged background prevents launcher startup,Optional image decoded in constructor and exception escaped,Runtime launcher navigation with damaged and valid images
 P2-009,Medium,Fixed and fixture-tested,Failed image decoding can keep file locked,First corruption fixture failed cleanup with retained URI handle,Explicit disposed stream and recovery advice
+P2-010,High,Implemented fixture-tested scopes awaiting runtime,Existing career prevents fresh setup via restart,Player report plus restart relaunches unchanged save scope,Review Return Home and New career flow
+P2-011,High,Implemented awaiting runtime,Restart launched replacement before runtime closed,Windows CreateProcess ran before RequestClose,Review restart after repeated save and reload

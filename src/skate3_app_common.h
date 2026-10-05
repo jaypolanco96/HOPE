@@ -66,4 +66,6 @@ class Skate3BaseApp : public rex::ReXApp {
   bool big_device_aliases_installed_ = false;
   std::atomic<uint32_t> debug_marker_count_{0};
   std::optional<skate3::SaveSlot> pending_save_removal_;
+  bool return_to_hope_home_ = false;
+  bool restart_after_shutdown_ = false;
 };

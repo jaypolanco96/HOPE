@@ -11,6 +11,7 @@ public sealed class LauncherPreferences
     public string? IsoPath { get; set; }
     public string? PhotoPath { get; set; }
     public int PhotoIndex { get; set; }
+    public string? CareerId { get; set; }
 }
 
 public static class SettingsFile
@@ -178,15 +179,16 @@ public static class SaveStorage
 public sealed class LauncherState
 {
     public string BundleRoot { get; }
-    public string UserRoot => File.Exists(Path.Combine(BundleRoot, "portable.txt")) ? BundleRoot :
+    public string ActiveRoot => Careers.Root(BundleRoot, Preferences.CareerId);
+    public string UserRoot => File.Exists(Path.Combine(ActiveRoot, "portable.txt")) ? ActiveRoot :
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "skate3");
     public string SettingsPath => Path.Combine(UserRoot, "settings.toml");
-    public string ConfigPath => Path.Combine(BundleRoot, "skate3.toml");
-    public string GameExecutable => Path.Combine(BundleRoot, "skate3.exe");
+    public string ConfigPath => Path.Combine(ActiveRoot, "skate3.toml");
+    public string GameExecutable => Path.Combine(ActiveRoot, "skate3.exe");
     public LauncherPreferences Preferences { get; private set; } = new();
     public string? PreferencesWarning { get; private set; }
     public string GameRoot => Path.GetFullPath(SettingsFile.StringValue(
-        SettingsFile.Read(ConfigPath, "game_data_root", JsonSerializer.Serialize(Path.Combine(BundleRoot, "game")))), BundleRoot);
+        SettingsFile.Read(ConfigPath, "game_data_root", JsonSerializer.Serialize(Path.Combine(ActiveRoot, "game")))), ActiveRoot);
     public bool HasGame => File.Exists(Path.Combine(GameRoot, "default.xex"));
     public bool HasIso => !string.IsNullOrWhiteSpace(Preferences.IsoPath) && File.Exists(Preferences.IsoPath);
 
@@ -199,8 +201,21 @@ public sealed class LauncherState
             try { Preferences = JsonSerializer.Deserialize<LauncherPreferences>(File.ReadAllText(path)) ?? new(); }
             catch (JsonException) { PreferencesWarning = "Launcher preferences could not be read. Game settings and saves are intact."; }
         }
+        if (Preferences.CareerId != null && !Careers.List(BundleRoot).Any(choice => choice.Id == Preferences.CareerId))
+        {
+            Preferences.CareerId = null;
+            PreferencesWarning = "The selected career folder is unavailable. Your main career is selected; no saves were changed.";
+        }
     }
 
+    public void SelectCareer(string? id)
+    {
+        if (IsGameRunning()) throw new IOException("Close the game before switching careers.");
+        if (!Careers.List(BundleRoot).Any(choice => choice.Id == id)) throw new IOException("This career is unavailable. Choose another career.");
+        var previous = Preferences.CareerId;
+        Preferences.CareerId = id;
+        try { SavePreferences(); } catch { Preferences.CareerId = previous; throw; }
+    }
     public void SavePreferences() => SettingsFile.AtomicWrite(Path.Combine(BundleRoot, "hope-launcher.json"),
         JsonSerializer.Serialize(Preferences, new JsonSerializerOptions { WriteIndented = true }));
 
@@ -226,11 +241,12 @@ public sealed class LauncherState
     {
         if (!File.Exists(GameExecutable)) throw new FileNotFoundException("The HOPE game executable is missing. Keep HOPE.exe and skate3.exe in the same folder.");
         if (!HasGame && !HasIso) throw new InvalidOperationException("Choose your own Skate 3 Xbox 360 ISO in Game setup first.");
-        var info = new ProcessStartInfo(GameExecutable) { WorkingDirectory = BundleRoot, UseShellExecute = false };
+        var info = new ProcessStartInfo(GameExecutable) { WorkingDirectory = ActiveRoot, UseShellExecute = false };
         // Never inherit an unrelated automated installer/demo path from the host.
         info.Environment.Remove("SKATE3_INSTALL_ISO");
         info.Environment.Remove("SKATE3_INSTALL_TU");
         if (!HasGame && HasIso) info.Environment["SKATE3_INSTALL_ISO"] = Preferences.IsoPath!;
+        info.Environment["HOPE_HOME_LAUNCHER"] = Path.Combine(BundleRoot, "HOPE.exe");
         return info;
     }
 }

@@ -23,6 +23,7 @@ public partial class MainWindow : Window, IDisposable
     private string page = "Home";
     private bool loading;
     private bool lastRunning;
+    private bool loadingCareers;
 
     public MainWindow(string root)
     {
@@ -34,6 +35,7 @@ public partial class MainWindow : Window, IDisposable
         photoIndex = Math.Clamp(state.Preferences.PhotoIndex, 0, Math.Max(0, photos.Count - 1));
         LoadPhoto();
         LoadGraphics();
+        ReloadCareers();
         Navigate("Home");
         RefreshStatus();
         if ((state.PreferencesWarning ?? photoWarning) is { } warning) Feedback.Text = warning;
@@ -107,6 +109,9 @@ public partial class MainWindow : Window, IDisposable
             ReadyDetail.Text = state.HasGame ? "Game files installed • Your career stays with this copy" : "Choose your Xbox 360 ISO in Game setup.";
             PlayButton.Content = running ? "GAME IS RUNNING" : state.HasGame ? "LET’S SKATE  →" : "SET UP HOPE  →";
             PlayButton.IsEnabled = !running;
+            CareerCombo.IsEnabled = !running;
+            NewCareerButton.IsEnabled = !running && state.HasGame;
+            if (lastRunning && !running) Navigate("Home");
             GraphicsForm.IsEnabled = !running;
             SaveGraphicsButton.IsEnabled = !running;
             if (running != lastRunning && page == "Saves") RefreshSaves();
@@ -123,6 +128,50 @@ public partial class MainWindow : Window, IDisposable
         Feedback.Text = state.HasGame ? "HOPE started. Escape or RB + Start opens the PC menu." : "Opening the ISO installer. Keep its window open until setup finishes.";
         RefreshStatus();
     });
+    private void ReloadCareers()
+    {
+        loadingCareers = true;
+        CareerCombo.Items.Clear();
+        foreach (var choice in Careers.List(state.BundleRoot))
+        {
+            var item = new ComboBoxItem { Content = choice.Label, Tag = choice };
+            CareerCombo.Items.Add(item);
+            if (choice.Id == state.Preferences.CareerId) CareerCombo.SelectedItem = item;
+        }
+        if (CareerCombo.SelectedIndex < 0) CareerCombo.SelectedIndex = 0;
+        loadingCareers = false;
+    }
+    private void Career_Changed(object sender, SelectionChangedEventArgs e)
+    {
+        if (loadingCareers || CareerCombo.SelectedItem is not ComboBoxItem { Tag: CareerChoice choice }) return;
+        Run(() =>
+        {
+            state.SelectCareer(choice.Id);
+            LoadGraphics();
+            RefreshStatus();
+            Feedback.Text = "Career selected. Play continues this career; other careers stay separate.";
+        });
+        ReloadCareers();
+    }
+    private async void NewCareer_Click(object sender, RoutedEventArgs e)
+    {
+      try
+      {
+        RequireGameClosed();
+        if (MessageBox.Show(this, "Create a separate career and return to first-time setup? Your current saves stay in their own folder. This copies the game program and settings, so it needs additional disk space.",
+            "HOPE — New career", MessageBoxButton.OKCancel, MessageBoxImage.Question, MessageBoxResult.Cancel) != MessageBoxResult.OK) return;
+        Feedback.Text = "Preparing a separate career. Your existing progress stays in its own folder…";
+        IsEnabled = false;
+        var id = await Task.Run(() => Careers.Create(state));
+        state.SelectCareer(id);
+        ReloadCareers();
+        LoadGraphics();
+        RefreshStatus();
+        Feedback.Text = "New career ready. Choose Play to start setup. Switch back using the career list.";
+      }
+      catch (Exception error) { Feedback.Text = error.Message; Feedback.Foreground = (Brush)FindResource("Pink"); }
+      finally { IsEnabled = true; }
+    }
 
     private void LoadGraphics()
     {
@@ -170,7 +219,7 @@ public partial class MainWindow : Window, IDisposable
     {
         pendingRemoval = null;
         DeleteConfirm.Visibility = Visibility.Collapsed;
-        SaveList.ItemsSource = SaveStorage.List(state.UserRoot, state.BundleRoot);
+        SaveList.ItemsSource = SaveStorage.List(state.UserRoot, state.ActiveRoot);
         SaveList.SelectedIndex = 0;
         if (SaveList.Items.Count == 0) Feedback.Text = "No saves found in this installation yet. Start a career to create one.";
     }
@@ -194,7 +243,7 @@ public partial class MainWindow : Window, IDisposable
     {
         RequireGameClosed();
         if (pendingRemoval is not { } selected) throw new IOException("Choose the save again.");
-        if (!SaveStorage.List(state.UserRoot, state.BundleRoot).Contains(selected)) throw new IOException("The save list changed. Refresh and choose the save again.");
+        if (!SaveStorage.List(state.UserRoot, state.ActiveRoot).Contains(selected)) throw new IOException("The save list changed. Refresh and choose the save again.");
         var recovery = SaveStorage.Archive(selected);
         RefreshSaves();
         Feedback.Text = "Save removed from active saves. Recovery copy: " + recovery;

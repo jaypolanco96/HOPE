@@ -10,6 +10,8 @@ namespace Hope.Launcher;
 public partial class App : Application
 {
     private Mutex? instance;
+    private EventWaitHandle? homeRequest;
+    private System.Windows.Threading.DispatcherTimer? homeMonitor;
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
@@ -48,14 +50,27 @@ public partial class App : Application
             }
             var identity = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(Path.GetFullPath(bundleRoot).ToUpperInvariant())));
             instance = new Mutex(true, @"Local\HOPE-" + identity, out var created);
+            homeRequest = new EventWaitHandle(false, EventResetMode.AutoReset, @"Local\HOPE-Home-" + identity);
             if (!created)
             {
-                MessageBox.Show("HOPE is already open for this installation.", "HOPE");
+                homeRequest.Set();
+                window.Dispose();
                 Shutdown(0);
                 return;
             }
             MainWindow = window;
             window.Show();
+            homeMonitor = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(250) };
+            homeMonitor.Tick += (_, _) =>
+            {
+                if (homeRequest.WaitOne(0))
+                {
+                    window.Navigate("Home");
+                    if (window.WindowState == WindowState.Minimized) window.WindowState = WindowState.Normal;
+                    window.Activate();
+                }
+            };
+            homeMonitor.Start();
         }
         catch (Exception error)
         {
@@ -67,5 +82,5 @@ public partial class App : Application
             Shutdown(1);
         }
     }
-    protected override void OnExit(ExitEventArgs e) { instance?.Dispose(); base.OnExit(e); }
+    protected override void OnExit(ExitEventArgs e) { homeMonitor?.Stop(); homeRequest?.Dispose(); instance?.Dispose(); base.OnExit(e); }
 }

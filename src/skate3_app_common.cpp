@@ -837,6 +837,38 @@ void Skate3BaseApp::OnShutdown() {
 }
 
 void Skate3BaseApp::OnRuntimeDestroyed() {
+#if defined(_WIN32)
+  if (restart_after_shutdown_) {
+    wchar_t executable[MAX_PATH]{};
+    std::wstring command = GetCommandLineW();
+    STARTUPINFOW startup{}; startup.cb = sizeof(startup);
+    PROCESS_INFORMATION process{};
+    if (!GetModuleFileNameW(nullptr, executable, MAX_PATH) ||
+        !CreateProcessW(executable, command.data(), nullptr, nullptr, FALSE, 0,
+                        nullptr, nullptr, &startup, &process)) {
+      REXLOG_ERROR("Could not restart after shutdown; Windows error {}", GetLastError());
+      rex::ShowSimpleMessageBox(rex::SimpleMessageBoxType::Error,
+          "The game closed, but restart failed. Open HOPE.exe to play again.");
+    } else { CloseHandle(process.hThread); CloseHandle(process.hProcess); }
+    restart_after_shutdown_ = false;
+  }
+  if (return_to_hope_home_) {
+    auto launcher = rex::filesystem::GetAppRootFolder() / "HOPE.exe";
+    if (const auto* home = _wgetenv(L"HOPE_HOME_LAUNCHER"); home && *home)
+      launcher = std::filesystem::path(home);
+    std::wstring command = L"\"" + launcher.wstring() + L"\" --home";
+    STARTUPINFOW startup{}; startup.cb = sizeof(startup);
+    PROCESS_INFORMATION process{};
+    const auto directory = launcher.parent_path().wstring();
+    if (!CreateProcessW(launcher.c_str(), command.data(), nullptr, nullptr, FALSE, 0,
+                        nullptr, directory.c_str(), &startup, &process)) {
+      REXLOG_ERROR("Could not open HOPE Home after shutdown; Windows error {}", GetLastError());
+      rex::ShowSimpleMessageBox(rex::SimpleMessageBoxType::Error,
+          "The game closed, but HOPE Home could not open. Open HOPE.exe from your installation folder.");
+    } else { CloseHandle(process.hThread); CloseHandle(process.hProcess); }
+    return_to_hope_home_ = false;
+  }
+#endif
   if (!pending_save_removal_) return;
   const auto result = skate3::ArchiveSave(*pending_save_removal_);
   if (result.success) {
@@ -952,6 +984,15 @@ void Skate3BaseApp::ToggleSimpleSettings() {
           imgui_drawer(), user_settings_path_, std::move(load_profiles), std::move(save_profile),
           std::move(close_settings), std::move(close_game), std::move(restart_game),
           std::move(poll_gamepad));
+#if defined(_WIN32)
+  simple_settings_dialog_->SetReturnHomeCallback([this]() {
+    return_to_hope_home_ = true;
+    app_context().CallInUIThreadDeferred([this]() {
+      if (window()) window()->RequestClose();
+      else app_context().QuitFromUIThread();
+    });
+  });
+#endif
   auto load_saves = [this]() {
     std::vector<rex::ui::SimpleSaveInfo> result;
     if (!runtime() || !runtime()->kernel_state() ||
@@ -1021,23 +1062,11 @@ void Skate3BaseApp::ApplyGameplayCursorMode() {
 void Skate3BaseApp::RestartGame() {
   app_context().CallInUIThreadDeferred([this]() {
 #if defined(_WIN32)
-    wchar_t executable_path[MAX_PATH] = {};
-    if (!GetModuleFileNameW(nullptr, executable_path, MAX_PATH)) {
-      REXLOG_WARN("Restart requested, but the executable path could not be resolved");
-      return;
-    }
-
-    std::wstring command_line = GetCommandLineW();
-    STARTUPINFOW startup_info{};
-    startup_info.cb = sizeof(startup_info);
-    PROCESS_INFORMATION process_info{};
-    if (!CreateProcessW(executable_path, command_line.data(), nullptr, nullptr, FALSE, 0, nullptr,
-                        nullptr, &startup_info, &process_info)) {
-      REXLOG_WARN("Restart requested, but launching a new process failed");
-      return;
-    }
-    CloseHandle(process_info.hThread);
-    CloseHandle(process_info.hProcess);
+    // Relaunch only after the runtime has finished closing its save handles.
+    restart_after_shutdown_ = true;
+    if (window()) window()->RequestClose();
+    else app_context().QuitFromUIThread();
+    return;
 #elif defined(__linux__) || defined(__APPLE__)
     const auto executable_path = rex::filesystem::GetExecutablePath();
     if (executable_path.empty()) {
