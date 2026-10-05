@@ -38,6 +38,8 @@ The SDK's release pin `cdda62349d6068e906c2e0ee340d6ec31eedbb9c` is unavailable 
 
 `sdk-build-compatibility.patch` preserves the dependency workaround relative to SDK commit `7eb0faf7787f5e01333c228b8e3f03c32f7295ea`. The SDK changes also live on local branch `phase1/build-compatibility`.
 
+The patch now also includes the requested PC-friendly settings UI, save-storage path accessors, and a post-runtime-destruction maintenance hook. The dependency and UI changes are committed locally in the SDK; the full patch preserves them for another checkout because these local SDK commits are not published upstream. See `PC-FRIENDLY-UPDATE.md` for behavior and validation.
+
 ## Title Update 3 verification
 
 Downloaded from the same URL configured by upstream: `https://xboxunity.net/Resources/Lib/TitleUpdate.php?tuid=21774`.

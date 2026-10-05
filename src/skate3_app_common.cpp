@@ -693,6 +693,12 @@ void Skate3BaseApp::OnCreateDialogs(rex::ui::ImGuiDrawer* drawer) {
   rex::ui::RegisterBind("bind_skate3_menu_alt", "F1", "Skate 3 settings alternate", [this] {
     ToggleSimpleSettings();
   });
+  rex::ui::RegisterBind("bind_skate3_pc_main_menu", "Home", "PC main menu", [this] {
+    if (!simple_settings_dialog_ || !simple_settings_dialog_->visible()) {
+      ToggleSimpleSettings();
+    }
+    simple_settings_dialog_->ShowMainMenu();
+  });
   // Remembered handle: the F11 paired A/B parity capture (native + emulated
   // screenshots + gsnap, sequenced from the guest frame loop in
   // skate3_native_render.cpp) needs the window without an app pointer.
@@ -814,6 +820,7 @@ void Skate3BaseApp::OnPostSetup() {
 }
 
 void Skate3BaseApp::OnShutdown() {
+  rex::ui::UnregisterBind("bind_skate3_pc_main_menu");
   rex::ui::UnregisterBind("bind_skate3_menu");
   rex::ui::UnregisterBind("bind_skate3_menu_alt");
   rex::ui::UnregisterBind("bind_skate3_save_draw_fingerprints");
@@ -825,6 +832,19 @@ void Skate3BaseApp::OnShutdown() {
   simple_settings_dialog_.reset();
   native_debug_dialog_.reset();
   render_mode_indicator_.reset();
+}
+
+void Skate3BaseApp::OnRuntimeDestroyed() {
+  if (!pending_save_removal_) return;
+  const auto result = skate3::ArchiveSave(*pending_save_removal_);
+  if (result.success) {
+    REXLOG_INFO("PC save removal completed; recovery copy: {}", result.recovery_path.string());
+  } else {
+    REXLOG_ERROR("PC save removal failed: {}", result.error);
+    rex::ShowSimpleMessageBox(rex::SimpleMessageBoxType::Error,
+                             "Save removal failed. " + result.error);
+  }
+  pending_save_removal_.reset();
 }
 
 void Skate3BaseApp::ToggleSimpleSettings() {
@@ -926,6 +946,42 @@ void Skate3BaseApp::ToggleSimpleSettings() {
           imgui_drawer(), user_settings_path_, std::move(load_profiles), std::move(save_profile),
           std::move(close_settings), std::move(close_game), std::move(restart_game),
           std::move(poll_gamepad));
+  auto load_saves = [this]() {
+    std::vector<rex::ui::SimpleSaveInfo> result;
+    if (!runtime() || !runtime()->kernel_state() ||
+        !runtime()->kernel_state()->content_manager()) return result;
+    const auto store = skate3::LoadProfiles(profiles_path_);
+    const auto* profile = skate3::FindSelectedProfile(store);
+    if (!profile) return result;
+    auto* content = runtime()->kernel_state()->content_manager();
+    const auto root = content->GetSavedGameRoot(profile->xuid, 0x454108E6);
+    const auto header_root = content->GetSavedGameHeaderRoot(profile->xuid, 0x454108E6);
+    for (const auto& slot : skate3::ListSaveSlots(root, header_root)) {
+      result.push_back({skate3::FormatXuid(profile->xuid) + "/" + slot.name, slot.name == "ALIAS_SKATER"
+          ? profile->gamertag + " - Career" : profile->gamertag + " - " + slot.name});
+    }
+    return result;
+  };
+  auto delete_save = [this](const std::string& selected_id) -> std::string {
+    if (!runtime() || !runtime()->kernel_state() ||
+        !runtime()->kernel_state()->content_manager()) return "Save storage is unavailable.";
+    const auto store = skate3::LoadProfiles(profiles_path_);
+    const auto* profile = skate3::FindSelectedProfile(store);
+    if (!profile) return "The selected profile is unavailable.";
+    const auto prefix = skate3::FormatXuid(profile->xuid) + "/";
+    if (!selected_id.starts_with(prefix)) return "The profile changed. Refresh the save list.";
+    const auto name = selected_id.substr(prefix.size());
+    auto* content = runtime()->kernel_state()->content_manager();
+    const auto root = content->GetSavedGameRoot(profile->xuid, 0x454108E6);
+    const auto header_root = content->GetSavedGameHeaderRoot(profile->xuid, 0x454108E6);
+    const auto slots = skate3::ListSaveSlots(root, header_root);
+    const auto found = std::find_if(slots.begin(), slots.end(),
+                                  [&](const auto& slot) { return slot.name == name; });
+    if (found == slots.end()) return "The save is no longer available. Refresh the list.";
+    pending_save_removal_ = *found;
+    return {};
+  };
+  simple_settings_dialog_->SetSaveCallbacks(std::move(load_saves), std::move(delete_save));
   ApplySettingsCursorMode();
   skate3::native_scene::SetSettingsMenuBlur(true);
   simple_settings_dialog_->Show();

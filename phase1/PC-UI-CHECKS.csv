@@ -1,0 +1,17 @@
+case_id,area,check,status
+PC-001,Menu,Escape F1 Home and controller chord open the PC menu,not_run
+PC-002,Menu,Mouse keyboard and controller navigate all eight pages,not_run
+PC-003,Menu,Quit confirmation defaults to Cancel and Back cancels,not_run
+PC-004,Menu,Confirm Quit reaches desktop without hanging,not_run
+PC-005,Menu,Resume retains current session and restart reaches title screen,not_run
+PC-006,Graphics,MSAA Off 2x 4x 8x changes visible edges without restart,not_run
+PC-007,Graphics,AO and full resolution AO toggle visibly and persist after restart,not_run
+PC-008,Graphics,Fog haze and sun shafts toggle independently and persist,not_run
+PC-009,Graphics,Native effect rows disabled with Emulated selected,not_run
+PC-010,Saves,Career and other packages match selected profile in both storage layouts,not_run
+PC-011,Saves,Back and Cancel leave disposable save unchanged,not_run
+PC-012,Saves,Confirm Delete and Quit archives disposable career after runtime teardown,not_run
+PC-013,Saves,Other disposable saves and their metadata remain intact,not_run
+PC-014,Saves,Recovery copy restores disposable career and progression,not_run
+PC-015,Layout,All rail entries and Quit fit at 720p 1080p and ultrawide,not_run
+PC-016,Regression,Difficulty and camera setup still reaches gameplay,not_run

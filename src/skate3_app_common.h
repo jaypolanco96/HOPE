@@ -14,6 +14,7 @@
 #include <rex/ui/overlay/simple_settings_overlay.h>
 
 #include "skate3_native_debug_dialog.h"
+#include "skate3_save_manager.h"
 
 namespace rex::ui {
 class ImGuiDrawer;
@@ -33,6 +34,7 @@ class Skate3BaseApp : public rex::ReXApp {
   void OnCreateDialogs(rex::ui::ImGuiDrawer* drawer) override;
   void OnPostSetup() override;
   void OnShutdown() override;
+  void OnRuntimeDestroyed() override;
 
  private:
   void InstallRecipeOverlay();
@@ -63,4 +65,5 @@ class Skate3BaseApp : public rex::ReXApp {
   bool recipe_overlay_installed_ = false;
   bool big_device_aliases_installed_ = false;
   std::atomic<uint32_t> debug_marker_count_{0};
+  std::optional<skate3::SaveSlot> pending_save_removal_;
 };

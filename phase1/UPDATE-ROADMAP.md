@@ -27,6 +27,8 @@ Deliverables: root-cause report, focused patch, regression coverage for the caus
 
 ## Phase 2 — Find broader bugs and improve reliability
 
+Prerequisite requested by the player: complete the PC-friendly menu, save-management, and graphics-settings update described in `PC-FRIENDLY-UPDATE.md` before starting Phase 2. This brings part of Phase 3 forward; the Phase 1 menu blocker still needs runtime reproduction and verification.
+
 Goal: protect progress and remove other game-stopping failures.
 
 1. Audit startup, new career, continue, save/load, pause/resume, challenge restart, camera changes, replay, display changes, controller reconnect, and quit/relaunch.

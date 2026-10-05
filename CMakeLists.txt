@@ -242,6 +242,7 @@ include(cmake/CodegenTargets.cmake)
 set(SKATE3_COMMON_SOURCES
     src/exception_compat.cpp
     src/skate3_math_compat.cpp
+    src/skate3_save_manager.cpp
     src/skate3_app_common.cpp
     src/skate3_demo_path.cpp
     src/skate3_draw_distance.cpp
@@ -358,6 +359,13 @@ else()
 endif()
 
 target_link_libraries(skate3 PRIVATE rex::runtime)
+
+if(WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    add_executable(skate3_pc_graphics_settings_test EXCLUDE_FROM_ALL
+        phase1/tests/pc_graphics_settings_test.cpp)
+    target_compile_features(skate3_pc_graphics_settings_test PRIVATE cxx_std_23)
+    target_link_libraries(skate3_pc_graphics_settings_test PRIVATE rex::runtime)
+endif()
 rexglue_configure_target(skate3)
 
 if(APPLE)
@@ -402,6 +410,9 @@ else()
 endif()
 
 if(WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    add_executable(skate3_save_manager_test EXCLUDE_FROM_ALL
+        phase1/tests/save_manager_test.cpp src/skate3_save_manager.cpp)
+    target_compile_features(skate3_save_manager_test PRIVATE cxx_std_23)
     add_executable(skate3_math_compat_test EXCLUDE_FROM_ALL
         phase1/tests/math_compat_test.cpp
         src/skate3_math_compat.cpp)

@@ -64,6 +64,9 @@ REXCVAR_DEFINE_BOOL(skate3_native_render_scene, true, "Skate 3",
                     "replacing the emulated GPU output (requires skate3_native_render). "
                     "Hot-toggles live between the native and emulated renderers (F5).")
     .lifecycle(rex::cvar::Lifecycle::kHotReload);
+REXCVAR_DEFINE_BOOL(skate3_native_render_scene_fog, true, "Skate 3",
+                    "Distance fog in the native renderer. Does not change authored sky or volumetric haze.")
+    .lifecycle(rex::cvar::Lifecycle::kHotReload);
 REXCVAR_DEFINE_BOOL(skate3_native_render_scene_lightmaps, true, "Skate 3",
                     "Sample guest lightmap textures in the native scene renderer. The "
                     "old 'lightpages decode black' finding is stale: in gameplay the "
@@ -10061,6 +10064,13 @@ void BuildFrameScene(uint8_t* base, const SubmitRecord* records, size_t count) {
     std::memcpy(scene.fog_ramp, g_fog_rows, 4 * sizeof(float));
     std::memcpy(scene.fog_color, g_fog_rows + 4, 4 * sizeof(float));
   }
+  if (!REXCVAR_GET(skate3_native_render_scene_fog)) {
+    // A zero ramp with exponent one gives exactly zero fog in every
+    // receiver; captured guest rows stay intact for instant re-enabling.
+    scene.fog_ramp[0] = 0.0f;
+    scene.fog_ramp[1] = 0.0f;
+    scene.fog_ramp[2] = 1.0f;
+  }
   if (g_water_have) {
     std::memcpy(scene.water_rows, g_water_rows, sizeof(scene.water_rows));
     scene.water_valid = true;
@@ -10487,4 +10497,3 @@ extern "C" REX_FUNC(sub_82802A00) {
   }
   __imp__sub_82802A00(ctx, base);
 }
-
