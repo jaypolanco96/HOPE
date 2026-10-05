@@ -75,3 +75,7 @@ Preview SHA-256:
 - `rexruntimerd.dll`: `4d744107bb9f5d0545b284dddc5b5d497e16260f4e98d8b7dc6319582c9bb0ef`
 
 Live UI and difficulty-screen reproduction remain outstanding; see `PC-UI-CHECKS.csv` and `REPRODUCTION.csv`. Phase 2 has not started.
+
+## HOPE launcher bundle
+
+HOPE launcher and branding source: app commit `a1eb929`, SDK commit `3b702b2`. The native game and matching runtime rebuilt successfully and were copied into the separate HOPE folder, with HOPE product metadata. The launcher Release build has zero warnings/errors; 30 launcher fixtures and five offline visual page inspections pass. Native save fixtures (33 checks; symlink privilege unavailable) and graphics persistence checks pass again. The prior four junction checks remain recorded above; launcher junction fixtures also pass in this update. Original installed executable/runtime and career hashes still match the recorded baseline. Local `HOPE/session.json` records this bundle's hashes. See `HOPE-LAUNCHER.md`. Live UI/game/controller/ISO-install validation and the original difficulty defect remain outstanding; Phase 2 has not started.
