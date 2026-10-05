@@ -1,0 +1,17 @@
+Area,Check,Status,Evidence
+Capture,21 bounded recorder checks,Passed,Disposable data; defaults bounds transitions write retry concurrent stop
+Analysis,9 analyzer tests,Passed,Synthetic data; percentiles grouping malformed and aggregate rejection
+Updater,31 lock and preservation checks,Passed,Disposable locked launcher and verified backups/root/career files
+Controls,12 original-menu and chord checks,Passed,Start preserved; chord consumed and reconnect guarded
+Profiles,20 local player/profile checks,Passed,Disposable data; identity preservation and write failure handling
+Saves,33 save-management checks,Passed with skip,Symbolic-link fixture unavailable due to Windows privilege
+Graphics,Independent persistence checks,Passed,Fog haze shafts remain separate; no graphics default changes
+Launcher,75 fixture checks and Release build,Passed,Zero warnings/errors; no game launched
+Layout,Help at 1360x850 and 1280x720,Passed,Offscreen WPF exports; capture folder button visible
+Preservation,9 existing HOPE save/settings files,Passed,Hash-identical after install; original root binaries and roaming save hashes unchanged
+Live cadence,Equivalent repeated route runs,Pending,Native game UI access previously rejected by automatic approval review
+GPU and memory,Execution times presentation VRAM RAM stalls,Pending,Guest cadence tool does not measure these
+Optimization,Improvement beyond baseline variance,Pending,No FPS improvement claimed or measured preset selected
+Game menu,Actual Skate 3 title-screen return,Open,Original menu preserved; true return remains unimplemented
+Difficulty,Intermittent blank setup screen,Open,Original defect remains unresolved
+Release,Two-hour mixed-play soak and regression matrix,Pending,Phase 4 is started not complete

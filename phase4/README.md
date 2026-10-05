@@ -44,3 +44,11 @@ Earlier automatic approval review rejected native game UI access. This checkpoin
 `skate3_frame_capture_test` verifies initial baselines, monotonic timestamps, context/renderer transitions, sample/time bounds, default-off behavior, write-failure retention/retry, schema preservation, concurrent stop and distinct output files using disposable directories. `python -m unittest discover -s phase4/tests -p 'test_*.py' -v` verifies percentile/slowest-1% definitions, grouping/transition exclusion and invalid/empty/aggregate input handling. Original-menu, profile, save and graphics checks remain part of the native build verification; launcher fixture checks remain required.
 
 Updater verification: 31 disposable checks pass, including exclusive destination-file lock refusal before changes, cleanup of newly created files after a refused update, complete root/career updates, verified backups, preserved save/settings bytes and corrupted-payload refusal. Every destination stays exclusively held until install verification or rollback completes. Close both HOPE and Skate 3 before updating.
+
+## Installed checkpoint
+
+HOPE 0.4.0 is installed at C:\GOG Games\Skate3Recomp-Windows\HOPE\HOPE.exe. Game/launcher source is 20a5d07; SDK source is ea30f5a; updater source is 260e0a6. PHASE4-BUILD.json is the authoritative installed payload record; older PC-MENU-BUILD.json/session.json describe prior checkpoints. The separate HOPE-Phase4-Update contains the checked updater, matching payload, analyzer and instructions.
+
+All 21 capture checks, nine analysis tests, 31 updater checks, 12 input checks, 20 profile checks, 33 save checks, graphics persistence checks and 75 launcher checks pass with the stated save symbolic-link skip. Offscreen Help at 1360x850 and 1280x720 was inspected. Nine existing HOPE save/settings files remained hash-identical, as did the root original game/runtime and original roaming career.
+
+Program rollback copies: HOPE\updates\hope-update-d26e7e91-25d0-426c-8fc7-5a3cb5c95362. A first install attempt was blocked by an open launcher; prior binaries were verified against their backups and the lock preflight was improved before successful installation. No real capture or FPS gain has been measured. See CHECKS.csv for open gates.
