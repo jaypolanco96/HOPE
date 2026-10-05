@@ -142,15 +142,18 @@
          </StackPanel>
          <StackPanel x:Name="HelpPanel" Visibility="Collapsed">
           <TextBlock Text="GET BACK TO YOUR LINE." Foreground="{StaticResource Mint}" FontSize="22" FontWeight="Bold"/>
-          <TextBlock Text="In game: Start opens Skate 3's own menu, including Restart and the Trick Book. Escape or RB + Start opens PC settings. Return to HOPE Launcher closes the session after confirmation; it does not return to Skate 3's title screen. Finish saving first. F8 starts a performance capture; press F8 again to save it, or quit normally to save it. Collection stops after 60 seconds. The game log reports the file location. New career keeps your current career and prepares separate saves for a fresh start." TextWrapping="Wrap" Foreground="#C8BED9" Margin="0,8,0,12"/>
+          <TextBlock Text="Start opens Skate 3's menu: Restart, Trick Book, map and replay. Escape or RB + Start opens HOPE settings. Return to HOPE Launcher closes the session; it does not return to Skate 3's title screen. Finish saving first." TextWrapping="Wrap" Foreground="#C8BED9" Margin="0,8,0,12"/>
           <TextBlock x:Name="ControllerStatus" Text="Controller: waiting for an XInput device" Foreground="{StaticResource Mint}" Margin="0,0,0,8"/>
+          <TextBlock Text="Check smoothness" FontSize="24" FontWeight="Bold"/>
+          <TextBlock Text="Press F8 in game to start a 60-second capture. Press F8 again to save it, or quit normally. Capturing is optional. The game log reports the file location if you use a custom cache folder." TextWrapping="Wrap" Foreground="#C8BED9" Margin="0,8,0,10"/>
+          <Button Content="Open performance captures" Click="OpenCaptures_Click" HorizontalAlignment="Left" Margin="0,0,0,16"/>
           <TextBlock Text="Recover game settings" FontSize="24" FontWeight="Bold"/>
           <TextBlock Text="Reset only the selected career's game settings. Its career saves, profiles, supplied game path, ISO choice and other careers stay intact. Current settings are moved to a backup. Changes apply next launch. Close the game first." TextWrapping="Wrap" Foreground="#C8BED9" Margin="0,8,0,10"/>
           <Button x:Name="ResetSettingsButton" Content="Reset game settings…" Foreground="{StaticResource Pink}" HorizontalAlignment="Left" Click="ResetSettings_Click"/>
           <TextBlock Text="Choose a backup from before the problem" Foreground="{StaticResource Mint}" Margin="0,8,0,0"/>
           <ComboBox x:Name="BackupCombo" AutomationProperties.Name="Settings backup"/>
           <TextBlock x:Name="BackupStatus" Text="No settings backups yet. Resetting settings creates one." Foreground="{StaticResource Mint}" FontSize="14" Margin="0,8,0,14" Visibility="Collapsed"/>
-          <WrapPanel><Button x:Name="RestoreSettingsButton" Content="Restore selected backup" Click="RestoreSettings_Click" Margin="0,0,12,10"/><Button Content="Open career folder" Click="OpenCareer_Click" Margin="0,0,12,10"/><Button Content="Open performance captures" Click="OpenCaptures_Click"/></WrapPanel>
+          <WrapPanel><Button x:Name="RestoreSettingsButton" Content="Restore selected backup" Click="RestoreSettings_Click" Margin="0,0,12,10"/><Button Content="Open career folder" Click="OpenCareer_Click"/></WrapPanel>
           <TextBlock Text="Current settings are backed up before restoration. A backup may contain the original problem; reset again or choose an earlier backup if needed. Hardware performance presets will follow measured testing." TextWrapping="Wrap" Foreground="#C8BED9" FontSize="14"/>
          </StackPanel>
          <StackPanel x:Name="CreditsPanel" Visibility="Collapsed">
