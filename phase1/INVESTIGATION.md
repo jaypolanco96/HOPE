@@ -12,6 +12,8 @@ The tag matches the logged release version; binary equivalence to a local rebuil
 
 Local-only baseline in `local-phase1/baseline`: executable, runtime, settings, profile save tree, logs, and SHA-256 manifest. These files are excluded from Git. Game assets remain outside this repository.
 
+The original game's save and logs advanced during this investigation: the later save timestamp was 09:57:55 Eastern, compared with the baseline save's 09:43:19 timestamp. No original save write was performed by the investigation tools. The historical baseline is retained for reproduction, and a separate later save/log snapshot is preserved in `local-phase1/later-snapshot`. No game process was detected when the later snapshot was taken. Do not treat a snapshot taken during live play as a proven consistent backup.
+
 Player reports controller input. Audio/background behavior and exact selections are not yet known.
 
 ## Initial findings
