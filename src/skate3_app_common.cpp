@@ -52,6 +52,8 @@
 #include <rex/graphics/native_guest_renderer.h>
 #include <rex/input/input_system.h>
 #include <rex/kernel/xam/module.h>
+#include <rex/kernel/guest_presence.h>
+#include <rex/kernel/xam/input_injection.h>
 #include <rex/logging.h>
 #include <rex/platform.h>
 #include <rex/perf/counter.h>
@@ -109,6 +111,7 @@ REXCVAR_DEFINE_DOUBLE(skate3_ultrawide_target_aspect, 0.0, "Skate 3",
 namespace {
 
 void ApplyDemoPathProfileOverride() {
+  if (rex::cvar::Query<bool>("xam_pc_local_player")) return;
   if (!rex::cvar::Query<bool>("skate3_demo_path") &&
       !rex::cvar::Query<bool>("skate3_demo_path_probe")) {
     return;
@@ -582,6 +585,7 @@ void Skate3BaseApp::OnConfigureFonts(ImFontAtlas* atlas) {
 
 std::optional<rex::PathConfig> Skate3BaseApp::OnFinalizePaths(
     const rex::PathConfig& defaults, std::function<void(rex::PathConfig)> resume) {
+  rex::cvar::SetFlagByName("xam_pc_local_player", "true");
   config_path_ = defaults.config_path;
   user_settings_path_ = defaults.user_data_root / std::string(kSettingsFilename);
   profiles_path_ = skate3::ProfilesFilePath(defaults.user_data_root);
@@ -753,6 +757,7 @@ void Skate3BaseApp::OnCreateDialogs(rex::ui::ImGuiDrawer* drawer) {
 }
 
 void Skate3BaseApp::OnPostSetup() {
+  rex::cvar::SetFlagByName("xam_pc_local_player", "true");
   skate3::shader_disasm::RunIfRequested();
   ApplySelectedProfileToRuntime();
   ApplyGameplayCursorMode();
@@ -770,6 +775,11 @@ void Skate3BaseApp::OnPostSetup() {
     });
     input_system->SetMenuChordCallback([this]() {
       app_context().CallInUIThreadDeferred([this]() { ToggleSimpleSettings(); });
+    });
+    input_system->SetPcPauseMenuEligibility([this]() {
+      return (simple_settings_dialog_ && simple_settings_dialog_->visible()) ||
+             (rex::kernel::guest_presence::GameplayContextValue() == 1 &&
+              !rex::kernel::xam::xeXamIsUIActive());
     });
   }
 
@@ -918,10 +928,8 @@ void Skate3BaseApp::ToggleSimpleSettings() {
     if (!gamertag.empty()) {
       profile.gamertag = std::move(gamertag);
     }
-    profile.signed_in = signed_in;
-    if (!profile.signed_in) {
-      profile.live_signed_in = false;
-    }
+    profile.signed_in = true; // Offline PC player is always available.
+    profile.live_signed_in = false;
     store.selected_profile = profile.id;
     if (!skate3::SaveProfiles(profiles_path_, store)) {
       REXLOG_ERROR("HOPE could not save profile changes at {}", profiles_path_.string());
@@ -993,6 +1001,11 @@ void Skate3BaseApp::ToggleSimpleSettings() {
     });
   });
 #endif
+  simple_settings_dialog_->SetGameActivitiesCallback([]() {
+    // An explicit opt-in to the game's existing activities/replay screens.
+    // This pulse is injected after raw input routing, not a physical Menu press.
+    rex::kernel::xam::QueueSyntheticInput(rex::input::X_INPUT_GAMEPAD_START, 8);
+  });
   auto load_saves = [this]() {
     std::vector<rex::ui::SimpleSaveInfo> result;
     if (!runtime() || !runtime()->kernel_state() ||

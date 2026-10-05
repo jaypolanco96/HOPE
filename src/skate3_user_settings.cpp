@@ -234,12 +234,13 @@ void EnsureUsableProfileStore(LocalProfileStore& store, std::string default_game
 }
 
 void ApplyProfileCvars(const LocalProfile& profile) {
+  const bool pc_local = rex::cvar::Query<bool>("xam_pc_local_player");
   rex::cvar::SetFlagByName("selected_user_profile", profile.id);
   rex::cvar::SetFlagByName("user_profile_name", profile.gamertag);
   rex::cvar::SetFlagByName("user_profile_xuid", FormatXuid(profile.xuid));
-  rex::cvar::SetFlagByName("user_profile_signed_in", profile.signed_in ? "true" : "false");
+  rex::cvar::SetFlagByName("user_profile_signed_in", pc_local || profile.signed_in ? "true" : "false");
   rex::cvar::SetFlagByName("user_live_signed_in",
-                           profile.signed_in && profile.live_signed_in ? "true" : "false");
+                           !pc_local && profile.signed_in && profile.live_signed_in ? "true" : "false");
 }
 
 void ApplyVideoCvars(int resolution_scale, double refresh_rate) {

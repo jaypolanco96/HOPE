@@ -1,4 +1,5 @@
 #include "skate3_user_settings.h"
+#include <rex/cvar.h>
 #include <chrono>
 #include <filesystem>
 #include <fstream>
@@ -61,6 +62,15 @@ int main() {
     std::ofstream(blocked) << "sentinel";
     require(!skate3::SaveProfiles(blocked / "profiles.toml", store), "Invalid parent reported success");
     require(Bytes(blocked) == "sentinel", "Invalid parent changed");
+    rex::cvar::SetFlagByName("xam_pc_local_player", "true");
+    auto offline = store.profiles.front();
+    offline.signed_in = false;
+    offline.live_signed_in = true;
+    skate3::ApplyProfileCvars(offline);
+    require(rex::cvar::Query<bool>("user_profile_signed_in"), "PC local player remained signed out");
+    require(!rex::cvar::Query<bool>("user_live_signed_in"), "PC player acquired online sign-in");
+    require(rex::cvar::Query<std::string>("user_profile_xuid") == skate3::FormatXuid(offline.xuid), "PC player changed save identity");
+    require(Bytes(path) == old, "PC runtime sign-in rewrote profile evidence");
     std::filesystem::remove_all(root);
     std::cout << "Passed " << checks << " profile reliability checks using disposable data.\n";
     return 0;

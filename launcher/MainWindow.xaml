@@ -73,7 +73,7 @@
           <TextBlock x:Name="ReadyTitle" Text="Your next line is waiting." FontSize="23" FontWeight="Bold"/>
           <TextBlock x:Name="ReadyDetail" Text="Controller ready • Native graphics • Your saves" FontSize="14" Foreground="#C8BED9" Margin="0,7,10,0"/>
           <ComboBox x:Name="CareerCombo" SelectionChanged="Career_Changed" Width="410" HorizontalAlignment="Left" AutomationProperties.Name="Choose career"/>
-          <TextBlock Text="In game: Escape or RB + Start opens the PC menu." Foreground="{StaticResource Mint}" FontSize="12" Margin="0,10,0,0"/>
+          <TextBlock Text="In game: Menu/Start during gameplay, Escape, or RB + Start opens the PC menu." Foreground="{StaticResource Mint}" FontSize="12" Margin="0,10,0,0"/>
          </StackPanel>
          <StackPanel Grid.Column="1" VerticalAlignment="Center">
           <Button x:Name="PlayButton" Style="{StaticResource Primary}" Content="LET’S SKATE  →" Click="Play_Click" Margin="0,0,0,8"/>
@@ -142,7 +142,7 @@
          </StackPanel>
          <StackPanel x:Name="HelpPanel" Visibility="Collapsed">
           <TextBlock Text="GET BACK TO YOUR LINE." Foreground="{StaticResource Mint}" FontSize="22" FontWeight="Bold"/>
-          <TextBlock Text="In game: Escape, Home, or RB + Start opens the PC menu. Return to HOPE Home closes the session after confirmation. Finish saving first. New career keeps your current career and prepares separate saves for a fresh start." TextWrapping="Wrap" Foreground="#C8BED9" Margin="0,8,0,12"/>
+          <TextBlock Text="In game: Menu/Start during gameplay, Escape, Home, or RB + Start opens the PC menu. Return to Home Screen closes the session after confirmation. Finish saving first. New career keeps your current career and prepares separate saves for a fresh start." TextWrapping="Wrap" Foreground="#C8BED9" Margin="0,8,0,12"/>
           <TextBlock x:Name="ControllerStatus" Text="Controller: waiting for an XInput device" Foreground="{StaticResource Mint}" Margin="0,0,0,8"/>
           <TextBlock Text="Recover game settings" FontSize="24" FontWeight="Bold"/>
           <TextBlock Text="Reset only the selected career's game settings. Its career saves, profiles, supplied game path, ISO choice and other careers stay intact. Current settings are moved to a backup. Changes apply next launch. Close the game first." TextWrapping="Wrap" Foreground="#C8BED9" Margin="0,8,0,10"/>

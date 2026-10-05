@@ -138,7 +138,7 @@ public partial class MainWindow : Window, IDisposable
         if (!state.HasGame && !state.HasIso) { Navigate("Setup"); return; }
         var process = Process.Start(state.BuildStartInfo()) ?? throw new IOException("The game could not be started.");
         process.Dispose();
-        Feedback.Text = state.HasGame ? "HOPE started. Escape or RB + Start opens the PC menu." : "Opening the ISO installer. Keep its window open until setup finishes.";
+        Feedback.Text = state.HasGame ? "HOPE started. Menu/Start during gameplay, Escape, or RB + Start opens the PC menu." : "Opening the ISO installer. Keep its window open until setup finishes.";
         RefreshStatus();
     });
     private void ReloadCareers()
