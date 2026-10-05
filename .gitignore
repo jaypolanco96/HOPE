@@ -41,3 +41,7 @@ CMakeUserPresets.json
 /launcher/bin/
 /launcher/obj/
 /launcher/assets/gameplay/
+
+# Local Python analysis bytecode.
+__pycache__/
+*.pyc

@@ -1,3 +1,5 @@
+#include "skate3_frame_capture.h"
+#include "skate3_build_version.h"
 #include "skate3_app_common.h"
 
 #include "skate3_demo_path.h"
@@ -712,8 +714,8 @@ void Skate3BaseApp::OnCreateDialogs(rex::ui::ImGuiDrawer* drawer) {
                           skate3::native_scene::ToggleSceneEnabled();
                         });
   rex::ui::RegisterBind("bind_skate3_save_draw_fingerprints", "F8",
-                        "Save draw fingerprint log", [this] {
-                          SaveDrawFingerprintLog();
+                        "Start/save performance capture", [this] {
+                          TogglePerformanceCapture();
                         });
   rex::ui::RegisterBind("bind_skate3_log_debug_marker", "F9",
                         "Write debug marker to log", [this] {
@@ -820,6 +822,8 @@ void Skate3BaseApp::OnPostSetup() {
 }
 
 void Skate3BaseApp::OnShutdown() {
+  const auto capture_result = skate3::frame_capture::Finish();
+  if (!capture_result.empty()) REXLOG_INFO("{}", capture_result);
   rex::ui::UnregisterBind("bind_skate3_menu");
   rex::ui::UnregisterBind("bind_skate3_menu_alt");
   rex::ui::UnregisterBind("bind_skate3_save_draw_fingerprints");
@@ -1113,40 +1117,15 @@ void Skate3BaseApp::RestartGame() {
   });
 }
 
-void Skate3BaseApp::SaveDrawFingerprintLog() {
-#ifndef REXGLUE_ENABLE_PERF_COUNTERS
-  REXLOG_WARN("Perf capture is unavailable because perf counters are disabled in this build");
-  return;
-#else
-  auto now = std::chrono::system_clock::now();
-  std::time_t now_time = std::chrono::system_clock::to_time_t(now);
-  std::tm local_time{};
-#if defined(_WIN32)
-  localtime_s(&local_time, &now_time);
-#else
-  localtime_r(&now_time, &local_time);
-#endif
-
-  std::ostringstream counters_filename;
-  counters_filename << "perf_capture_counters_" << std::put_time(&local_time, "%Y%m%d_%H%M%S")
-                    << ".csv";
-  std::ostringstream filename;
-  filename << "perf_capture_draw_fingerprints_" << std::put_time(&local_time, "%Y%m%d_%H%M%S")
-           << ".csv";
-
-  std::error_code ec;
-  std::filesystem::create_directories(cache_root(), ec);
-  const auto counters_path = cache_root() / counters_filename.str();
-  const auto path = cache_root() / filename.str();
-  if (rex::perf::StartCapture(counters_path, path)) {
-    REXLOG_INFO("Started perf capture; counter log will be saved to {}",
-                counters_path.string());
-    REXLOG_INFO("Started perf capture; draw fingerprint log will be saved to {}",
-                path.string());
-  } else {
-    REXLOG_WARN("Perf capture is already running");
+void Skate3BaseApp::TogglePerformanceCapture() {
+  std::ostringstream metadata;
+  metadata << "# build=" << HOPE_BUILD_VERSION << '\n';
+  for (const char* flag : {"resolution_scale", "vsync", "skate3_native_render_pace_hz",
+      "skate3_native_render_scene_msaa", "skate3_native_render_scene_ssao",
+      "skate3_native_render_scene_ssao_full_res", "video_mode_refresh_rate"}) {
+    if (rex::cvar::GetFlagInfo(flag)) metadata << "# " << flag << '=' << rex::cvar::GetFlagByName(flag) << '\n';
   }
-#endif
+  REXLOG_INFO("{}", skate3::frame_capture::Toggle(cache_root() / "performance", metadata.str()));
 }
 
 void Skate3BaseApp::LogUserMarker() {

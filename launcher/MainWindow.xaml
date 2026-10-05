@@ -44,7 +44,7 @@
        <Border Background="#D918172A" BorderBrush="#8275FFE1" BorderThickness="1" CornerRadius="15" Padding="14,9">
         <TextBlock x:Name="StatusBadge" Text="●  READY TO ROLL" Foreground="{StaticResource Mint}" FontSize="12" FontWeight="Bold"/>
        </Border>
-       <TextBlock Text="PHASE 3 / QUALITY OF LIFE" Foreground="#D5CDEC" FontSize="11" VerticalAlignment="Center" Margin="16,0,0,22"/>
+       <TextBlock Text="PHASE 4 / PERFORMANCE" Foreground="#D5CDEC" FontSize="11" VerticalAlignment="Center" Margin="16,0,0,22"/>
       </StackPanel>
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" shell:WindowChrome.IsHitTestVisibleInChrome="True">
        <Button Content="—" Width="42" Padding="0,8" Margin="0,0,8,0" Click="Minimize_Click" AutomationProperties.Name="Minimize launcher"/>
@@ -142,7 +142,7 @@
          </StackPanel>
          <StackPanel x:Name="HelpPanel" Visibility="Collapsed">
           <TextBlock Text="GET BACK TO YOUR LINE." Foreground="{StaticResource Mint}" FontSize="22" FontWeight="Bold"/>
-          <TextBlock Text="In game: Start opens Skate 3's own menu, including Restart and the Trick Book. Escape or RB + Start opens PC settings. Return to HOPE Launcher closes the session after confirmation; it does not return to Skate 3's title screen. Finish saving first. New career keeps your current career and prepares separate saves for a fresh start." TextWrapping="Wrap" Foreground="#C8BED9" Margin="0,8,0,12"/>
+          <TextBlock Text="In game: Start opens Skate 3's own menu, including Restart and the Trick Book. Escape or RB + Start opens PC settings. Return to HOPE Launcher closes the session after confirmation; it does not return to Skate 3's title screen. Finish saving first. F8 starts a performance capture; press F8 again to save it, or quit normally to save it. Collection stops after 60 seconds. The game log reports the file location. New career keeps your current career and prepares separate saves for a fresh start." TextWrapping="Wrap" Foreground="#C8BED9" Margin="0,8,0,12"/>
           <TextBlock x:Name="ControllerStatus" Text="Controller: waiting for an XInput device" Foreground="{StaticResource Mint}" Margin="0,0,0,8"/>
           <TextBlock Text="Recover game settings" FontSize="24" FontWeight="Bold"/>
           <TextBlock Text="Reset only the selected career's game settings. Its career saves, profiles, supplied game path, ISO choice and other careers stay intact. Current settings are moved to a backup. Changes apply next launch. Close the game first." TextWrapping="Wrap" Foreground="#C8BED9" Margin="0,8,0,10"/>

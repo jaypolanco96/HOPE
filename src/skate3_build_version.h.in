@@ -1,0 +1,2 @@
+#pragma once
+#define HOPE_BUILD_VERSION "@SKATE3_FULL_VERSION@"

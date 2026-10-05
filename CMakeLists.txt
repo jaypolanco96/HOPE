@@ -247,6 +247,7 @@ set(SKATE3_COMMON_SOURCES
     src/skate3_demo_path.cpp
     src/skate3_draw_distance.cpp
     src/skate3_fov.cpp
+    src/skate3_frame_capture.cpp
     src/skate3_iso_installer.cpp
     src/native/skate3_native_diagnostics.cpp
     src/native/skate3_native_entity.cpp
@@ -300,6 +301,8 @@ target_include_directories(skate3 PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}/include
     ${REXSDK_DIR}/thirdparty/xxHash
 )
+configure_file(src/skate3_build_version.h.in
+    ${CMAKE_CURRENT_BINARY_DIR}/include/skate3_build_version.h @ONLY)
 
 set(SKATE3_NATIVE_SHADER_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/native/shaders/scene.hlsl
@@ -418,6 +421,10 @@ if(WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     add_executable(skate3_pc_menu_input_test EXCLUDE_FROM_ALL pc-gameplay-menu/input_routing_test.cpp)
     target_compile_features(skate3_pc_menu_input_test PRIVATE cxx_std_23)
     target_include_directories(skate3_pc_menu_input_test PRIVATE third_party/rexglue-sdk/include)
+    add_executable(skate3_frame_capture_test EXCLUDE_FROM_ALL
+        phase4/tests/frame_capture_test.cpp src/skate3_frame_capture.cpp)
+    target_compile_features(skate3_frame_capture_test PRIVATE cxx_std_23)
+    target_include_directories(skate3_frame_capture_test PRIVATE src)
     add_executable(skate3_save_manager_test EXCLUDE_FROM_ALL
         phase1/tests/save_manager_test.cpp src/skate3_save_manager.cpp)
     target_compile_features(skate3_save_manager_test PRIVATE cxx_std_23)

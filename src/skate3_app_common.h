@@ -45,7 +45,7 @@ class Skate3BaseApp : public rex::ReXApp {
   void ApplySettingsCursorMode();
   void ApplyGameplayCursorMode();
   void RestartGame();
-  void SaveDrawFingerprintLog();
+  void TogglePerformanceCapture();
   void LogUserMarker();
   void LogDebugMarker();
   void ApplySelectedProfileToRuntime();

@@ -1,4 +1,5 @@
 #include "skate3_native_render.h"
+#include "skate3_frame_capture.h"
 
 #include "native/skate3_native_diag.h"
 #include "native/skate3_native_entity.h"
@@ -24,6 +25,7 @@
 
 #include <rex/cvar.h>
 #include <rex/logging.h>
+#include <rex/kernel/guest_presence.h>
 #include <rex/ui/window.h>
 
 REXCVAR_DEFINE_BOOL(skate3_native_render, true, "Skate 3",
@@ -272,6 +274,10 @@ void PaceGuestFrame() {
 
 void OnFrameEnd(uint8_t* base) {
   PaceGuestFrame();
+  if (skate3::frame_capture::IsRecording()) {
+    skate3::frame_capture::Record(rex::kernel::guest_presence::GameplayContextValue(),
+                                 skate3::native_scene::Enabled());
+  }
   // EMULATED-mode guest frame breakdown (emulated gameplay once regressed
   // from 140 to 66 fps while native stayed at cap; the native-scene perf
   // line only prints while the native renderer is active, so emulated
@@ -1012,4 +1018,3 @@ extern "C" REX_FUNC(sub_827C1D38) {
     skate3::native_palette::OnLwPack(base, entity);
   }
 }
-
