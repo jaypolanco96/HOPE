@@ -52,8 +52,6 @@
 #include <rex/graphics/native_guest_renderer.h>
 #include <rex/input/input_system.h>
 #include <rex/kernel/xam/module.h>
-#include <rex/kernel/guest_presence.h>
-#include <rex/kernel/xam/input_injection.h>
 #include <rex/logging.h>
 #include <rex/platform.h>
 #include <rex/perf/counter.h>
@@ -699,12 +697,6 @@ void Skate3BaseApp::OnCreateDialogs(rex::ui::ImGuiDrawer* drawer) {
   rex::ui::RegisterBind("bind_skate3_menu_alt", "F1", "Skate 3 settings alternate", [this] {
     ToggleSimpleSettings();
   });
-  rex::ui::RegisterBind("bind_skate3_pc_main_menu", "Home", "PC main menu", [this] {
-    if (!simple_settings_dialog_ || !simple_settings_dialog_->visible()) {
-      ToggleSimpleSettings();
-    }
-    simple_settings_dialog_->ShowMainMenu();
-  });
   // Remembered handle: the F11 paired A/B parity capture (native + emulated
   // screenshots + gsnap, sequenced from the guest frame loop in
   // skate3_native_render.cpp) needs the window without an app pointer.
@@ -776,11 +768,7 @@ void Skate3BaseApp::OnPostSetup() {
     input_system->SetMenuChordCallback([this]() {
       app_context().CallInUIThreadDeferred([this]() { ToggleSimpleSettings(); });
     });
-    input_system->SetPcPauseMenuEligibility([this]() {
-      return (simple_settings_dialog_ && simple_settings_dialog_->visible()) ||
-             (rex::kernel::guest_presence::GameplayContextValue() == 1 &&
-              !rex::kernel::xam::xeXamIsUIActive());
-    });
+    input_system->SetPcMenuChordRoutingEnabled(true);
   }
 
   if (std::getenv("SKATE3_DISABLE_BIG_ALIASES") == nullptr) {
@@ -832,7 +820,6 @@ void Skate3BaseApp::OnPostSetup() {
 }
 
 void Skate3BaseApp::OnShutdown() {
-  rex::ui::UnregisterBind("bind_skate3_pc_main_menu");
   rex::ui::UnregisterBind("bind_skate3_menu");
   rex::ui::UnregisterBind("bind_skate3_menu_alt");
   rex::ui::UnregisterBind("bind_skate3_save_draw_fingerprints");
@@ -1001,11 +988,6 @@ void Skate3BaseApp::ToggleSimpleSettings() {
     });
   });
 #endif
-  simple_settings_dialog_->SetGameActivitiesCallback([]() {
-    // An explicit opt-in to the game's existing activities/replay screens.
-    // This pulse is injected after raw input routing, not a physical Menu press.
-    rex::kernel::xam::QueueSyntheticInput(rex::input::X_INPUT_GAMEPAD_START, 8);
-  });
   auto load_saves = [this]() {
     std::vector<rex::ui::SimpleSaveInfo> result;
     if (!runtime() || !runtime()->kernel_state() ||
