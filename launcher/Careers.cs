@@ -34,7 +34,15 @@ public static class Careers
         var runtimeFiles = Directory.GetFiles(state.BundleRoot, "rexruntime*.dll");
         if (runtimeFiles.Length == 0) throw new IOException("The matching game runtime is missing. Repair this installation before creating a career.");
         foreach (var runtime in runtimeFiles) File.Copy(runtime, Path.Combine(root, Path.GetFileName(runtime)));
+        // Inherited graphics settings must keep their mod ownership record,
+        // so the new career can also disable and restore inherited mods.
+        new ModManager(state.BundleRoot, state.ActiveRoot, () => state.IsGameRunning()).List();
         if (File.Exists(state.SettingsPath)) File.Copy(state.SettingsPath, Path.Combine(root, "settings.toml"));
+        var modState = Path.Combine(state.ActiveRoot, "mods", "state.json");
+        if (File.Exists(modState)) {
+            Directory.CreateDirectory(Path.Combine(root, "mods"));
+            File.Copy(modState, Path.Combine(root, "mods", "state.json"));
+        }
         SettingsFile.AtomicWrite(Path.Combine(root, "skate3.toml"), "game_data_root = " + JsonSerializer.Serialize(state.GameRoot) + "\n");
         File.WriteAllText(Path.Combine(root, "portable.txt"), "");
         Directory.CreateDirectory(Path.Combine(root, "saves"));

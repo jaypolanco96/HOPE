@@ -4,7 +4,7 @@ Open Mods, tick a mod and choose Apply selected mods. Close the game first. Mods
 
 Five built-ins: No Intro Videos, Wide Streets (75-degree view), Clear Air (fog/haze/shafts off), Clean Lens (bloom off), Light Ride (2x MSAA, AO off). Graphics effects require the Native renderer. Light Ride reduces visual quality; no FPS gain has been measured. No Intro Videos skips frontend movies, including attract videos; it does not bypass difficulty/camera setup. Its actual in-game behavior still needs player validation.
 
-Import accepts .hope-mod.json settings manifests, not DLLs, archives or replacement game assets. Imported mods start disabled. Different values for the same setting conflict and the entire apply is refused. Libraries are shared between careers; selections and restoration records are separate. Invalid imports are refused without replacing existing mods.
+Import accepts .hope-mod.json settings manifests, not DLLs, archives or replacement game assets. Imported mods start disabled. Different values for the same setting conflict and the entire apply is refused. Libraries are shared between careers; selections and restoration records are separate. A new career inherits current settings and their mod selection, then manages them independently. Invalid imports are refused without replacing existing mods.
 
 Example (save as custom-crisp-view.hope-mod.json):
 ```json
