@@ -1,6 +1,6 @@
 # HOPE: four-phase update roadmap
 
-Updated October 5, 2026. Phase 4 measurement work and subsequent graphics/mod/particle/branding updates are implemented. All earlier live completion gates remain open. Launcher 0.6.3 and game 2.0.0.37-dev.g66ac4f3 are installed; see [current status](../docs/CURRENT-STATUS.md). Difficulty/camera and true Skate title return remain unfinished; the shirt hotfix awaits movement retesting.
+Updated October 5, 2026. Phase 4 measurement work and subsequent graphics/mod/particle/branding updates are implemented. All earlier live completion gates remain open. Launcher 0.6.3 and game 2.0.0.41-dev.ge7ca86e are installed; see [current status](../docs/CURRENT-STATUS.md). Difficulty/camera and true Skate title return remain unfinished. The shirt still detached on the previous build with particles disabled; the new clothing state correction awaits movement retest.
 
 ## Starting evidence
 

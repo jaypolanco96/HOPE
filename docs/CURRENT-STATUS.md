@@ -1,7 +1,7 @@
 # Current HOPE status
 
 Updated October 5, 2026. Launcher 0.6.3 is installed with native game
-2.0.0.37-dev.g66ac4f3. Game behavior source: 66ac4f3. SDK behavior source:
+2.0.0.41-dev.ge7ca86e. Game behavior source: e7ca86e. SDK behavior source:
 a459a73. Launcher icon source: 7c0a937. Later documentation commits do not
 change those installed program versions.
 
@@ -11,11 +11,12 @@ change those installed program versions.
 | Original menu | Start/Menu preserved; Escape / RB+Start opens HOPE settings | Actual Skate title return and original-menu extensions |
 | Difficulty | Diagnostic/reliability work and isolated careers | Intermittent blank screen after difficulty/camera choices |
 | Graphics | Existing native effects exposed in launcher/overlay | Appearance, correctness and performance on real hardware |
-| Particles/clothing | Soft dust sprite, separate particle pipelines, cloth exclusions, previous character shaders restored | Player shirt movement retest; original effect materials |
+| Particles/clothing | Separate particle pipelines; original character shaders; corrected cloth mode, recovery age and decode consistency | New build's shirt movement retest; original effect materials |
 | Cosmetic mods | No Intro, Wide Streets, three crowd styles; settings manifest importer | Crowd appearance and shader/model edge cases |
 | Performance | F8 bounded cadence capture and analyzer | Controlled CPU/GPU/presentation baselines, optimizations and soak |
 
-Latest recorded checks: 109 installed launcher fixtures; 15 compiled
+Latest recorded checks: 109 installed launcher fixtures; 39 compiled
+clothing state regression checks; 15 compiled
 particle/cloth isolation checks; 10 texture checks; two isolated particle
 shader variants compiled for both D3D12 and Vulkan with UV/resource bindings
 verified. Character scene source and original SPIR-V table match the
@@ -26,10 +27,13 @@ save management, graphics persistence and timing capture. Their counts and
 limitations are in the phase checkpoints; they are not a claim that every
 check was rerun for an icon or documentation-only change.
 
-The clothing report remains an open validation item. The unsafe quad-list
-material assumption was removed, but its exact contribution to the observed
-shirt problem was not reproduced. Do not mark the report fixed until the
-same player/shirt movement has been retested.
+The player confirmed the shirt still detaches with particles disabled on
+game 2.0.0.37. The new correction addresses invalid mode flags observed in
+that session's log plus stale recovery and decode-mode bugs. Twelve existing
+save/settings/mod/original/shared files retained their hashes after install
+and fixture tests. The visible outcome still requires the same player/shirt
+movement retest; do not mark it verified until that succeeds. See
+[clothing correction](../launcher/Mods/CLOTHING-STATE-FIX.md).
 
 Path tracing, skeleton pedestrians and playable beta content are unavailable.
 No restricted iMMERSE Pro source or retail art is bundled. The current

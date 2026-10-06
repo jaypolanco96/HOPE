@@ -2,7 +2,23 @@
 
 These entries describe local development builds, not published release assets.
 
-## 0.6.3 — Launcher icon and folder organization
+## Game 2.0.0.41 â€” Clothing capture and recovery correction
+
+- The previous shirt hotfix failed, including with particles disabled.
+  Fresh owner cloth state now takes precedence over foreign shader banks.
+- Bound stale recovery to three missed frames without renewing recovered
+  poses; verify garment owner/extent and reset mode-transition history.
+- Preserve decode mode/owner across deduplication, scene/shadow rendering
+  and shape blending, including equal-payload mode changes.
+- Reject behind-camera/nonfinite samples, uncertain garment removal and
+  invalid packed-palette translations.
+- Native build succeeded; 39 clothing, 15 particle isolation and 10 texture
+  checks passed. Installed launcher passed 109 fixtures. Twelve save,
+  settings, mod and original/shared files retained their hashes.
+- Launcher stays at 0.6.3. Live shirt appearance requires a movement retest.
+  See [details](launcher/Mods/CLOTHING-STATE-FIX.md).
+
+## 0.6.3 â€” Launcher icon and folder organization
 
 - Original H/skateboard icon embedded in the executable and window; multiple
   icon resolutions, editable SVG and generator retained in source.
@@ -11,7 +27,7 @@ These entries describe local development builds, not published release assets.
   copies preserved. Current game remains the 0.6.2 clothing hotfix build.
 - Installed launcher: 109 fixture checks; embedded EXE icon extracted/checked.
 
-## 0.6.2 — Particle/clothing isolation hotfix
+## 0.6.2 â€” Particle/clothing isolation hotfix
 
 - Reject clothing shaders, continuous garment UVs, oversized/invalid panels
   and incomplete quad batches before assigning the particle material.
@@ -20,14 +36,14 @@ These entries describe local development builds, not published release assets.
 - 15 isolation and 10 texture checks; shader varying/resource checks.
 - Shirt detachment/disappearance report still needs the user's movement retest.
 
-## 0.6.1 — Original particle texture
+## 0.6.1 â€” Original particle texture
 
 - Original soft dust texture, transparent rim, clamped sampling and alpha
   blending for captured quad-list draws; per-device texture upload.
 - A subsequent shirt regression report prompted the 0.6.2 isolation hotfix.
 - Original game effect textures/colors remain unmapped; effects experimental.
 
-## 0.6.0 — Advanced graphics and creative cosmetic mods
+## 0.6.0 â€” Advanced graphics and creative cosmetic mods
 
 - Additional controls for reflections, HDR intermediate lighting, shadow
   softness/quality, AO radius/strength, bloom/shafts, mips, decals and particles.

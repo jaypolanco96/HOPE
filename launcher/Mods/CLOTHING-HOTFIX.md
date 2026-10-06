@@ -1,5 +1,9 @@
 # HOPE 0.6.2 clothing / particle hotfix
 
+**Superseded:** the player confirmed the shirt still detaches with particles
+disabled on this build. See [the subsequent clothing state correction](CLOTHING-STATE-FIX.md).
+The description below records the earlier particle isolation work.
+
 Installed with game 2.0.0.37-dev.g66ac4f3. Seven program payload hashes were
 verified. Ten existing save/settings/profile/mod and original/shared files
 retained their pre-install hashes after installation and launcher tests.

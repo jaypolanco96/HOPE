@@ -74,7 +74,8 @@ FFmpeg, or select your own screenshots in Game setup.
 
 ```powershell
 out/hope-launcher/HOPE.exe --self-test --test-report out/hope-launcher-tests.txt
-cmake --build --preset relwithdebinfo --target hope_particle_draw_test hope_particle_texture_test --parallel 4
+cmake --build --preset relwithdebinfo --target hope_clothing_state_test hope_particle_draw_test hope_particle_texture_test --parallel 4
+out/build/relwithdebinfo/hope_clothing_state_test.exe
 out/build/relwithdebinfo/hope_particle_draw_test.exe
 out/build/relwithdebinfo/hope_particle_texture_test.exe
 python -m unittest discover -s phase4/tests -p "test_*.py" -v

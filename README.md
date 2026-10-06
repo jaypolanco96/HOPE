@@ -1,6 +1,6 @@
 <p align="center"><img src="launcher/Branding/hope.png" width="128" alt="HOPE skateboard launcher icon"></p>
 
-# HOPE — Hills, Ollies, Pavement, Expression
+# HOPE â€” Hills, Ollies, Pavement, Expression
 
 A Windows launcher and PC-focused community update for **Skate3Recomp by [mchughalex](https://github.com/mchughalex/skate3recomp)**. HOPE adds career and save management, PC settings, experimental cosmetic mods, and a bright Bay Area street-skate interface.
 
@@ -8,7 +8,7 @@ A Windows launcher and PC-focused community update for **Skate3Recomp by [mchugh
 
 ## Current build
 
-Launcher **0.6.3** accompanies game **2.0.0.37-dev.g66ac4f3**, including the clothing/particle hotfix. These are locally built development versions. No downloadable HOPE release has been published to GitHub yet.
+Launcher **0.6.3** accompanies game **2.0.0.41-dev.ge7ca86e**, including the clothing capture/recovery correction. These are locally built development versions. No downloadable HOPE release has been published to GitHub yet.
 
 HOPE's WPF launcher targets Windows. The underlying upstream project supports other platforms; HOPE's additions have not been validated on Linux or macOS. See [current status](docs/CURRENT-STATUS.md), [changelog](CHANGELOG.md), and [four-phase roadmap](phase1/UPDATE-ROADMAP.md).
 
@@ -45,7 +45,7 @@ The launcher requires the **.NET 8 Windows Desktop runtime**. Source builds requ
 
 - The original intermittent blank difficulty screen after difficulty/camera selection remains open. The report involves a controller.
 - A true return to Skate 3's title screen and rebuilding its original menu remain unfinished. Some game-authored console wording remains.
-- The player reported the shirt detaching/disappearing during movement after particle integration. The 0.6.2 isolation hotfix is installed, but the movement retest has not been confirmed. See [hotfix details](launcher/Mods/CLOTHING-HOTFIX.md).
+- The shirt still detached with particles disabled on the previous build. Game 2.0.0.41 corrects cloth-mode classification, stale pose recovery and mode-dependent geometry reuse. The affected player's movement retest is still needed. See [clothing correction](launcher/Mods/CLOTHING-STATE-FIX.md).
 - Particle effect textures/colors, larger or atlas-mapped effects, individual quad sorting and softened depth intersections remain incomplete. The dust fallback is not every original effect.
 - Crowd appearance, real controller navigation/reconnect, setup/save/load flows and long-session stability still need gameplay validation.
 - Path tracing is unavailable. No iMMERSE Pro source was integrated. No verified playable beta-content pack or skeleton-pedestrian replacement is offered.
@@ -60,7 +60,7 @@ The launcher can be built separately:
 dotnet build launcher/HOPE.Launcher.csproj -c Release -o out/hope-launcher
 ```
 
-Launcher fixtures and offscreen previews use disposable data and start no game. The latest installed launcher passed **109 fixture checks**; particle isolation passed **15 compiled checks**, and the texture generator passed **10 checks**. These checks do not establish live gameplay correctness. See [contributing and bug reports](CONTRIBUTING.md).
+Launcher fixtures and offscreen previews use disposable data and start no game. The latest installed launcher passed **109 fixture checks**; clothing state passed **39 compiled checks**, particle isolation passed **15 checks**, and the texture generator passed **10 checks**. These checks do not establish live gameplay correctness. See [contributing and bug reports](CONTRIBUTING.md).
 
 ## Files and recovery
 
