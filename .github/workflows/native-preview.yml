@@ -53,11 +53,12 @@ jobs:
           python release/codegen_inputs.py open hope-codegen-inputs.enc
       - name: Configure Linux
         if: runner.os == 'Linux'
-        run: cmake -S . -B out/build/preview -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang-20 -DCMAKE_CXX_COMPILER=clang++-20 -DREXGLUE_USE_VULKAN=ON
+        run: cmake -S . -B out/build/preview -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang-20 -DCMAKE_CXX_COMPILER=clang++-20 -DREXGLUE_USE_VULKAN=ON -DSKATE3_PREGENERATED_TU3=ON
       - name: Configure macOS
         if: runner.os == 'macOS'
-        run: cmake -S . -B out/build/preview -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=/opt/homebrew/opt/llvm/bin/clang -DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm/bin/clang++ -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0 -DREXGLUE_USE_VULKAN=ON
+        run: cmake -S . -B out/build/preview -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=/opt/homebrew/opt/llvm/bin/clang -DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm/bin/clang++ -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0 -DREXGLUE_USE_VULKAN=ON -DSKATE3_PREGENERATED_TU3=ON
       - name: Build native game and regression checks
+        # Fail early if restored inputs would get the wrong runtime layout.
         run: cmake --build out/build/preview --target skate3 hope_clothing_state_test hope_particle_draw_test hope_particle_texture_test --parallel 2
       - name: Run isolated regression checks
         run: |

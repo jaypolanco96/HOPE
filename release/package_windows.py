@@ -1,6 +1,7 @@
 """Create a fresh Windows preview from an explicit program allowlist."""
 import hashlib
 import json
+import os
 from pathlib import Path
 import shutil
 import sys
@@ -50,6 +51,18 @@ for doc in ("DLC.md", "CURRENT-STATUS.md"):
     (folder / "docs").mkdir(exist_ok=True)
     shutil.copy2(Path("docs") / doc, folder / "docs" / doc)
 notices = folder / "notices"
+nuget = Path(os.environ.get("NUGET_PACKAGES", str(Path.home() / ".nuget/packages")))
+frameworks = json.loads((publish / "HOPE.runtimeconfig.json").read_text())["runtimeOptions"]["includedFrameworks"]
+for framework in frameworks:
+    pack = framework["name"].lower() + ".runtime.win-x64"
+    source = nuget / pack / framework["version"]
+    licenses = [file for file in source.iterdir() if file.name.upper().startswith(("LICENSE", "THIRD-PARTY-NOTICES"))]
+    if not licenses:
+        raise RuntimeError(f"Missing runtime notices for {pack}")
+    for file in licenses:
+        target = notices / "dotnet" / pack / file.name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(file, target)
 sdk = Path("third_party/rexglue-sdk")
 for file in sdk.rglob("*"):
     if file.is_file() and (file.name.upper().startswith("LICENSE") or file.name.upper().startswith("COPYING") or file.name.upper().startswith("NOTICE")):

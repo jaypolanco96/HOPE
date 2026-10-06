@@ -89,6 +89,12 @@ set(SKATE3_GAME_DATA_ROOT
 set(SKATE3_TITLE_UPDATE_PACKAGE
     ""
     CACHE FILEPATH "Optional Skate 3 title update STFS package used for codegen")
+option(SKATE3_PREGENERATED_TU3
+    "Generated sources already target Title Update 3; retain matching runtime hooks"
+    OFF)
+if(SKATE3_PREGENERATED_TU3 AND NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/generated/sources.cmake")
+    message(FATAL_ERROR "SKATE3_PREGENERATED_TU3 requires existing TU3 generated sources")
+endif()
 option(SKATE3_ENABLE_X86_64_V3
     "Build x86_64 desktop binaries for x86-64-v3 CPUs (AVX2/BMI2)"
     OFF)
@@ -337,7 +343,7 @@ add_custom_command(
     VERBATIM)
 target_sources(skate3 PRIVATE ${SKATE3_NATIVE_SHADER_HEADER})
 target_compile_definitions(skate3 PRIVATE SKATE3_BUILD_CONFIG="$<CONFIG>")
-if(NOT SKATE3_EFFECTIVE_TITLE_UPDATE_PACKAGE STREQUAL "")
+if(NOT SKATE3_EFFECTIVE_TITLE_UPDATE_PACKAGE STREQUAL "" OR SKATE3_PREGENERATED_TU3)
     target_compile_definitions(skate3 PRIVATE SKATE3_HAS_TITLE_UPDATE=1)
 else()
     target_compile_definitions(skate3 PRIVATE SKATE3_HAS_TITLE_UPDATE=0)
