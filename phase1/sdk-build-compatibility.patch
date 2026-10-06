@@ -334,7 +334,7 @@ index 50a26d0..5af18d6 100644
          GetInterRegularCompressedBase85(), 18.0f, &config_on_light);
      ui_font_semibold_on_light_ = io.Fonts->AddFontFromMemoryCompressedBase85TTF(
 diff --git a/src/ui/overlay/simple_settings_overlay.cpp b/src/ui/overlay/simple_settings_overlay.cpp
-index c22345f..44ede1d 100644
+index c22345f..f0a334c 100644
 --- a/src/ui/overlay/simple_settings_overlay.cpp
 +++ b/src/ui/overlay/simple_settings_overlay.cpp
 @@ -54,7 +54,19 @@ constexpr std::array<std::string_view, 7> kCoreSimpleSettingsCvars = {
@@ -379,7 +379,7 @@ index c22345f..44ede1d 100644
 + {"skate3_native_render_scene_ssr", "Reflections (Experimental)", "Screen-space reflections on glass and water. Requires HDR lighting. May show noise and smearing.", false},
 + {"skate3_native_render_scene_tex_mips", "Texture Mipmaps", "Filters distant textures to reduce shimmering.", true},
 + {"skate3_native_render_scene_decals", "Graffiti and Decals", "Authored surface artwork and paint.", true},
-+ {"skate3_native_render_scene_quadlists", "Particles (Experimental)", "Incomplete particle draw path: sprite textures are missing and particles may appear as floating white squares. Off by default.", false}
++ {"skate3_native_render_scene_quadlists", "Particles (Experimental)", "Soft dust sprites with transparent edges. Original effect textures and colors are not yet mapped. Off by default.", false}
 +}};
 +struct AdvancedRange {
 + const char* cvar; const char* label; const char* description;

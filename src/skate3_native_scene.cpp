@@ -23,6 +23,7 @@
 #include <filesystem>
 #include <fstream>
 #include <memory>
+#include <limits>
 #include <mutex>
 #include <thread>
 #include <unordered_map>
@@ -393,10 +394,9 @@ REXCVAR_DEFINE_BOOL(skate3_native_render_scene_selection_outline, true, "Skate 3
                     "edge-detect adds the blue contour (postfx_edgedetectstencil port)")
     .lifecycle(rex::cvar::Lifecycle::kHotReload);
 REXCVAR_DEFINE_BOOL(skate3_native_render_scene_quadlists, false, "Skate 3",
-                    "Render captured non-indexed quad-list draws. Off by default: every "
-                    "quad-list capture seen so far is a PARTICLE system (disjoint 2-4cm "
-                    "sprites), which renders as floating white squares without the game's "
-                    "sprite textures and blending.")
+                    "Render experimental particle quadlists with HOPE soft dust sprites "
+                    "and alpha blending. Original effect textures/colors are not mapped. "
+                    "Off by default.")
     .lifecycle(rex::cvar::Lifecycle::kHotReload);
 REXCVAR_DEFINE_INT32(skate3_native_render_scene_mesh_decode_budget, 0, "Skate 3",
                      "Max INLINE mesh decodes per rendered frame (0 = unlimited). Only "
@@ -4431,11 +4431,23 @@ uint32_t CaptureClothDraw(uint8_t* base, uint32_t r4, uint32_t r5, uint32_t r6,
   item.skinned = false;
   item.pending = false;
   item.cloth_quads = true;
+  item.transparent = true;
   std::memset(item.world, 0, sizeof(item.world));
   item.world[0] = item.world[5] = item.world[10] = item.world[15] = 1.0f;
+  if (!GuestRangeReadable(base, addr, item.vb_bytes)) return 0;
+  // Real bounds also give the transparent pass a meaningful batch distance.
+  // Validate every position; an invalid simulation buffer must not publish.
   for (int axis = 0; axis < 3; ++axis) {
-    item.bbox_min[axis] = -20000.0f;
-    item.bbox_max[axis] = 20000.0f;
+    item.bbox_min[axis] = std::numeric_limits<float>::max();
+    item.bbox_max[axis] = -std::numeric_limits<float>::max();
+  }
+  for (uint32_t vertex = 0; vertex < quads * 4; ++vertex) {
+    for (int axis = 0; axis < 3; ++axis) {
+      const float value = std::bit_cast<float>(REX_LOAD_U32(addr + vertex*kStride + axis*4));
+      if (!std::isfinite(value) || std::abs(value) > 20000.0f) return 0;
+      item.bbox_min[axis] = std::min(item.bbox_min[axis], value);
+      item.bbox_max[axis] = std::max(item.bbox_max[axis], value);
+    }
   }
   item.draws.push_back({4, 0, 0, quads * 6});
 

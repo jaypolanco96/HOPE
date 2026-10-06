@@ -6,6 +6,7 @@
 #include "skate3_native_debug_dialog.h"
 #include "skate3_native_scene.h"
 #include "hope_crowd_mods.h"
+#include "hope_particle_texture.h"
 
 #include "generated/skate3_init.h"
 
@@ -2806,7 +2807,7 @@ bool EnsureScenePsoFamily(const NativeGuestOutputRenderContext& context) {
   for (nrhi::Pipeline** p :
        {&g_r.pso, &g_r.pso_cullback, &g_r.pso_transparent, &g_r.pso_fade,
         &g_r.pso_hair_a, &g_r.pso_hair_b, &g_r.pso_nodepth,
-        &g_r.pso_outline_mask}) {
+        &g_r.pso_outline_mask, &g_r.pso_particle_nodepth}) {
     if (*p != nullptr) {
       device->DestroyDeferred(*p);
       *p = nullptr;
@@ -2885,6 +2886,12 @@ bool EnsureScenePsoFamily(const NativeGuestOutputRenderContext& context) {
   pso.blend.dst_alpha = nrhi::BlendFactor::kInvSrcAlpha;
   pso.blend.op_alpha = nrhi::BlendOp::kAdd;
   g_r.pso_transparent = device->CreateGraphicsPipeline(pso);
+  // Particle coverage must still alpha-blend when scene depth is disabled.
+  pso.depth.test_enable = false;
+  pso.dsv_format = nrhi::Format::kUnknown;
+  g_r.pso_particle_nodepth = device->CreateGraphicsPipeline(pso);
+  pso.depth.test_enable = true;
+  pso.dsv_format = nrhi::Format::kD32_FLOAT;
   // Entity-fade variant: z-write ON (see RendererState::pso_fade). Drawn
   // at the head of the blended sub-pass so glass/hair still composite
   // over the faded body.
@@ -2924,7 +2931,7 @@ bool EnsureScenePsoFamily(const NativeGuestOutputRenderContext& context) {
   device->DestroyDeferred(vs);
   device->DestroyDeferred(ps);
   if (g_r.pso == nullptr || g_r.pso_nodepth == nullptr ||
-      g_r.pso_transparent == nullptr) {
+      g_r.pso_transparent == nullptr || g_r.pso_particle_nodepth == nullptr) {
     REXLOG_ERROR("native-scene: PSO creation failed");
     g_r.failed = true;
     return false;
@@ -3943,6 +3950,35 @@ bool EnsureFallbackTextures(const NativeGuestOutputRenderContext& context) {
       return false;
     }
     g_r.white.valid = true;
+  }
+  if (!g_r.particle_dust.valid) {
+    // One persistent texture; no guest assets, disk IO or per-frame upload.
+    auto& tex = g_r.particle_dust;
+    nrhi::TextureDesc desc;
+    desc.width = desc.height = hope::kParticleSize;
+    desc.format = nrhi::Format::kR8G8B8A8_UNORM;
+    desc.initial_state = nrhi::ResourceState::kCopyDest;
+    tex.texture = device->CreateTexture(desc);
+    constexpr uint32_t pitch = hope::kParticleSize * 4;
+    tex.upload = CreateUploadBuffer(device, pitch * hope::kParticleSize,
+                                    nrhi::BufferBindClass::kCopySrc);
+    if (!tex.texture || !tex.upload) { g_r.failed = true; return false; }
+    auto* mapping = static_cast<uint8_t*>(device->Map(tex.upload));
+    if (!mapping) { g_r.failed = true; return false; }
+    const auto pixels = hope::MakeParticleTexture();
+    std::memcpy(mapping, pixels.data(), pixels.size());
+    device->Unmap(tex.upload);
+    context.cmd->CopyBufferToTexture(tex.texture, 0, 0, tex.upload, 0, pitch,
+                                     hope::kParticleSize, hope::kParticleSize, 1);
+    context.cmd->Barrier(tex.texture, nrhi::ResourceState::kCopyDest,
+                         nrhi::ResourceState::kPixelShaderResource);
+    device->DestroyDeferred(tex.upload);
+    tex.upload = nullptr;
+    nrhi::TextureViewDesc vd;
+    vd.mip_levels = 1;
+    tex.srv = device->CreateTextureView(tex.texture, vd);
+    if (!tex.srv) { g_r.failed = true; return false; }
+    tex.valid = true;
   }
   if (!g_r.white_cube.valid) {
     // 1x1x6 mid-gray fallback cube for the water reflection slot (t6): a
@@ -9470,6 +9506,14 @@ bool RenderScene(const NativeGuestOutputRenderContext& context, void* /*user_dat
     }
     if (item.hope_neon_crowd && debug_mode == 0 &&
         g_r.showcase_rows[0] == 0.0f && g_r.showcase_rows[1] == 0.0f) hope::NeonTint(constants);
+    if (item.cloth_quads && debug_mode == 0) {
+      // Dedicated straight-alpha sprite shading; bypass surface alpha-test,
+      // skinning, water and environment material conventions.
+      constants[32] = constants[33] = constants[34] = 0.0f;
+      constants[35] = -1.0f;
+      constants[39] = -60.0f;
+      diffuse = &g_r.particle_dust;
+    }
     cmd->SetRootConstants(0, 52, constants, 0);
 
     cmd->SetTexture(1, diffuse->srv);
@@ -10066,6 +10110,12 @@ bool RenderScene(const NativeGuestOutputRenderContext& context, void* /*user_dat
     cmd->SetPipeline(use_depth ? g_r.pso_transparent : g_r.pso_nodepth);
     nrhi::Pipeline* blend_bound = use_depth ? g_r.pso_transparent : g_r.pso_nodepth;
     for (const DrawItem* item : transparent_items) {
+      if (item->cloth_quads && !use_depth) {
+        cmd->SetPipeline(g_r.pso_particle_nodepth);
+        timed_draw(*item);
+        cmd->SetPipeline(blend_bound);
+        continue;
+      }
       // Mid-fade entity pieces: alpha blend with z-write ON (see pso_fade).
       if (use_depth && g_r.pso_fade != nullptr && char_fade_zwrite(*item)) {
         if (blend_bound != g_r.pso_fade) {

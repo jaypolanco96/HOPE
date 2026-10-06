@@ -477,6 +477,7 @@ struct RendererState {
   // environment.transparent sub-pass: straight alpha blend, depth test on,
   // z-write OFF; items drawn back-to-front after all opaque items.
   nrhi::Pipeline* pso_transparent = nullptr;
+  nrhi::Pipeline* pso_particle_nodepth = nullptr;
   // Entity-fade variant of the transparent PSO: same straight alpha blend
   // but z-write ON. A fading character/vehicle is a solid object at partial
   // opacity; z-write-off blending composites every overlapping piece (skin
@@ -788,6 +789,7 @@ struct RendererState {
   // destruction is deferred inside the RHI (Device::DestroyDeferred) and
   // texture bindings are backend-managed view objects.)
   GuestTexture white;
+  GuestTexture particle_dust;
   // Water environment CUBE maps (t6): separate cache; same guest object
   // addresses decode differently (6 faces, TextureCube SRV).
   std::unordered_map<uint32_t, GuestTexture> cube_textures;

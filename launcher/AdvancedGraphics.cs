@@ -53,6 +53,6 @@ public static class AdvancedGraphics
         Range("skate3_native_render_scene_shafts_steps","Sun-shaft quality","Volumetric ray steps; more steps cost more GPU time. Requires shadows, shafts and HDR lighting.",64,8,64,1),
         Flag("skate3_native_render_scene_tex_mips","Texture mipmaps","Filters distant textures to reduce shimmering.",true),
         Flag("skate3_native_render_scene_decals","Graffiti and painted decals","Displays authored surface artwork.",true),
-        Flag("skate3_native_render_scene_quadlists","Particle draws (experimental)","Incomplete: sprite textures are missing, so particles can appear as floating white squares. Off by default.",false)
+        Flag("skate3_native_render_scene_quadlists","Particle draws (experimental)","Soft dust sprites with transparent edges. Experimental: original game effect textures and colors are not yet mapped. Off by default.",false)
     ];
 }

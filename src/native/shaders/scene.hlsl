@@ -190,6 +190,12 @@ float4 ShadePixel(VSOut i) {
   if (tint.a > 0.0) {
     return float4(PassGamma(tint.rgb), tint.a);
   }
+  // HOPE original particle sprite: smooth coverage, straight-alpha blend.
+  // Reserved family marker is assigned only to captured particle quadlists.
+  if (cam_pos.w == -60.0) {
+    float4 sprite = diffuse.Sample(smp_clamp, i.uv);
+    return float4(PassGamma(sprite.rgb), sprite.a);
+  }
   float4 albedo = diffuse.Sample(smp, i.uv);
   // Alpha-tested foliage/fences; opaque formats sample alpha = 1. Character
   // diffuse packs GLOSS in alpha; never clip characters. tint.g > 0 marks
