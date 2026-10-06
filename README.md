@@ -2,15 +2,25 @@
 
 # HOPE — Hills, Ollies, Pavement, Expression
 
-A Windows launcher and PC-focused community update for **Skate3Recomp by [mchughalex](https://github.com/mchughalex/skate3recomp)**. HOPE adds career and save management, PC settings, experimental cosmetic mods, and a bright Bay Area street-skate interface.
+A Windows launcher and PC-focused community update built on **Skate3Recomp by [mchughalex](https://github.com/mchughalex/skate3recomp)**. Made with heart for the Skate 3 community, HOPE helps you organize your careers, customize your session, and get back to finding and filming your next line.
+
+**[Download HOPE](https://github.com/jaypolanco96/HOPE/releases/latest)** · [Report a bug](https://github.com/jaypolanco96/HOPE/issues) · [Setup and platform details](docs/RELEASES.md)
 
 **Bring your own Skate 3 Xbox 360 ISO. This repository provides no retail game files or ISO download links.** Gameplay backgrounds must come from your own game files or screenshots.
 
-## Current build
+## Download HOPE v0.6.5
 
-**[Download the HOPE 0.6.5 Community Preview](https://github.com/jaypolanco96/HOPE/releases/tag/hope-v0.6.5-preview.1).** Windows x64 includes the launcher and native game. Linux x64 and Apple Silicon macOS packages are experimental **native-game-only** previews; they do not include the HOPE launcher. Each package requires your own Skate 3 Xbox 360 ISO/game files.
+**[HOPE v0.6.5 is the latest community release](https://github.com/jaypolanco96/HOPE/releases/latest).** Choose your package under **Assets** on the release page. Each archive has a SHA-256 checksum and third-party notices.
 
-The Windows launcher **0.6.5** accompanies game **2.0.0.41-dev.ge7ca86e**, including player-owned DLC import, career-page refresh fixes and safer configuration recovery. The native game includes the clothing capture/recovery correction. Packages are development previews, not verified complete gameplay releases. Install into a new writable folder and preserve your existing career.
+| Platform | Package | Requirements and included features |
+| --- | --- | --- |
+| Windows x64 | `.zip` | Windows 10/11 x64. HOPE launcher + native game; launcher .NET runtime bundled. |
+| Linux x64 — experimental | `.tar.gz` | Ubuntu 24.04 or compatible, GTK3, Vulkan drivers and curl. Native game only; no HOPE launcher. |
+| macOS Apple Silicon — experimental | `.tar.gz` | macOS 15+. Native game + MoltenVK; no HOPE launcher. Ad-hoc signed, not notarized; Intel Macs unsupported. |
+
+**Linux and macOS do not include Windows launcher features** such as career/save management, launcher mod import or launcher DLC import. See [installation instructions and platform limits](docs/RELEASES.md).
+
+The Windows launcher **0.6.5** accompanies game **2.0.0.41-dev.ge7ca86e**, including player-owned DLC import, career-page refresh fixes and safer configuration recovery. The native game includes the clothing capture/recovery correction. HOPE remains under active development; a community release does not establish complete gameplay compatibility. Install into a new writable folder and preserve your existing career.
 
 HOPE's WPF launcher targets Windows. Linux x64 and macOS arm64 native builds passed compilation and isolated regression checks; live gameplay remains unverified. The Mac preview targets Apple Silicon/macOS 15+ and is ad-hoc signed, not notarized. See [platform/package limits](docs/RELEASES.md), [current status](docs/CURRENT-STATUS.md), [changelog](CHANGELOG.md), and [four-phase roadmap](phase1/UPDATE-ROADMAP.md).
 
@@ -26,14 +36,14 @@ HOPE's WPF launcher targets Windows. Linux x64 and macOS arm64 native builds pas
 
 ## Start playing on Windows
 
-For an existing HOPE installation:
+For a fresh download:
 
-1. Open `Play HOPE.lnk`, or `HOPE/HOPE.exe`.
+1. Extract the Windows release into a **new writable folder**, then open `HOPE.exe`.
 2. Use **Game setup** to choose your own ISO or an extracted game folder containing `default.xex`.
 3. Let game installation/title-update setup finish, then choose **Play**.
 4. Set preferences in **Graphics** before launching. Use the in-game PC settings for supported live changes.
 
-The launcher requires the **.NET 8 Windows Desktop runtime**. Source builds require the .NET 8 SDK. HOPE support files must remain beside `HOPE.exe`, `skate3.exe`, and the matching runtime DLL.
+The downloadable Windows package bundles the launcher runtime. Framework-dependent source builds require the **.NET 8 Windows Desktop runtime**, and building the launcher requires the .NET 8 SDK. Keep the extracted support files beside `HOPE.exe`, `skate3.exe`, and the matching runtime DLL.
 
 | Input | Action |
 | --- | --- |
@@ -63,15 +73,17 @@ The launcher can be built separately:
 dotnet build launcher/HOPE.Launcher.csproj -c Release -o out/hope-launcher
 ```
 
-Launcher fixtures and offscreen previews use disposable data and start no game. The latest installed launcher passed **109 fixture checks**; clothing state passed **39 compiled checks**, particle isolation passed **15 checks**, and the texture generator passed **10 checks**. These checks do not establish live gameplay correctness. See [contributing and bug reports](CONTRIBUTING.md).
+Launcher fixtures and offscreen previews use disposable data and start no game. Launcher 0.6.5 passed **164 fixture checks**. Native release builds passed **39 clothing-state checks**, **15 particle-isolation checks**, and **9 texture checks** each. These checks do not establish live gameplay correctness. See [contributing and bug reports](CONTRIBUTING.md).
 
 ## Files and recovery
 
-The cleaned local installation uses `HOPE/docs` for guides/build records and `Archive/Update packages` / `Archive/Preview builds` for earlier packages. Older builds and their save copies were preserved. `Archive/folder-moves.json` records relocations. Program rollback copies stay in `HOPE/updates`.
+Back up your existing installation and careers before changing versions. Extract the GitHub release separately; overwriting an existing folder is not a save migration. Windows program rollback copies created by the updater stay in `HOPE/updates`.
 
 Close both launcher and game before applying an update. The updater verifies program hashes and backs up existing program files; it does not reset career progress or settings. When running an archived installer, pass the current HOPE folder explicitly as `-Target`.
 
 ## Credits
+
+Find your spot. Film your line. Share your clips with **#HOPESkate3** and help give the community more Skate 3 to watch.
 
 - **[mchughalex / Skate3Recomp](https://github.com/mchughalex/skate3recomp):** original recompilation, native renderer and project foundation.
 - **[ReXGlue SDK](https://github.com/rexglue/rexglue-sdk)** and the [Skate-specific SDK fork](https://github.com/mchughalex/rexglue-skate3).
