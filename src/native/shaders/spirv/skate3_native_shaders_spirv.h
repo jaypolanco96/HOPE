@@ -6531,7 +6531,7 @@ static const uint32_t k_scene_ps_main[] = {
     0x0003003e, 0x0000000a, 0x0000236c, 0x000100fd, 0x00010038,
 };
 
-// scene.hlsl : ps_main [HDR=1] (201424 bytes)
+// scene.hlsl : ps_main [HDR=1] (202428 bytes)
 static const uint32_t k_scene_ps_main_HDR_1[] = {
     0x07230203, 0x00010300, 0x000e0000, 0x0000237e, 0x00000000, 0x00020011, 0x00000001, 0x0006000b,
     0x00000001, 0x4c534c47, 0x6474732e, 0x3035342e, 0x00000000, 0x0003000e, 0x00000000, 0x00000001,
@@ -12861,7 +12861,7 @@ static const uint32_t k_scene_ps_main_HDR_1[] = {
     0x0000237c, 0x00002340, 0x0003003e, 0x0000000a, 0x0000237d, 0x000100fd, 0x00010038,
 };
 
-// scene.hlsl : ps_main [SHOWCASE=1] (242784 bytes)
+// scene.hlsl : ps_main [SHOWCASE=1] (243496 bytes)
 static const uint32_t k_scene_ps_main_SHOWCASE_1[] = {
     0x07230203, 0x00010300, 0x000e0000, 0x00002abc, 0x00000000, 0x00020011, 0x00000001, 0x0006000b,
     0x00000001, 0x4c534c47, 0x6474732e, 0x3035342e, 0x00000000, 0x0003000e, 0x00000000, 0x00000001,
@@ -20475,7 +20475,7 @@ static const uint32_t k_scene_ps_main_SHOWCASE_1[] = {
     0x000100fd, 0x00010038,
 };
 
-// scene.hlsl : ps_main [HDR=1;SHOWCASE=1] (242812 bytes)
+// scene.hlsl : ps_main [HDR=1;SHOWCASE=1] (243900 bytes)
 static const uint32_t k_scene_ps_main_HDR_1_SHOWCASE_1[] = {
     0x07230203, 0x00010300, 0x000e0000, 0x00002acc, 0x00000000, 0x00020011, 0x00000001, 0x0006000b,
     0x00000001, 0x4c534c47, 0x6474732e, 0x3035342e, 0x00000000, 0x0003000e, 0x00000000, 0x00000001,
