@@ -1,6 +1,6 @@
 # Current HOPE status
 
-Updated October 6, 2026. Launcher 0.6.4 is installed with native game
+Updated October 6, 2026. Launcher 0.6.5 is installed with native game
 2.0.0.41-dev.ge7ca86e. Game behavior source: e7ca86e. SDK behavior source:
 a459a73. Launcher icon source: 7c0a937. Later documentation commits do not
 change those installed program versions.
@@ -16,7 +16,8 @@ change those installed program versions.
 | DLC | Player-owned single-file STFS import; shared career library; native installation next launch | Real package installation and in-game availability |
 | Performance | F8 bounded cadence capture and analyzer | Controlled CPU/GPU/presentation baselines, optimizations and soak |
 
-Latest recorded checks: 139 installed launcher fixtures (30 DLC checks); 39 compiled
+Latest recorded checks: 164 installed launcher fixtures (30 DLC and 25 career/
+configuration regression checks); 24 synthetic updater checks; 39 compiled
 clothing state regression checks; 15 compiled
 particle/cloth isolation checks; 10 texture checks; two isolated particle
 shader variants compiled for both D3D12 and Vulkan with UV/resource bindings
@@ -52,3 +53,11 @@ fixtures must create portable.txt and assert their paths before writing.
 All four phases have implementation work; earlier completion gates and
 Phase 4 performance/soak validation are still open. No measured FPS gain or
 performance preset is advertised.
+
+The October 6 launcher review fixed stale career save/recovery pages, unreadable
+preferences, invalid game-folder recovery and skipped N-format careers in updates.
+Synthetic updater tests include all-file locking and save/settings preservation.
+The latest inspected game log (`skate3_022.log`) contains recurring XMA input
+offset diagnostics and a heap-release diagnostic during shutdown. These are
+recorded for native investigation; no audio or memory fix is claimed from this
+launcher update, and no live playback regression test was performed.

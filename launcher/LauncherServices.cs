@@ -187,9 +187,31 @@ public sealed class LauncherState
     public string GameExecutable => Path.Combine(ActiveRoot, "skate3.exe");
     public LauncherPreferences Preferences { get; private set; } = new();
     public string? PreferencesWarning { get; private set; }
-    public string GameRoot => Path.GetFullPath(SettingsFile.StringValue(
-        SettingsFile.Read(ConfigPath, "game_data_root", JsonSerializer.Serialize(Path.Combine(ActiveRoot, "game")))), ActiveRoot);
-    public bool HasGame => File.Exists(Path.Combine(GameRoot, "default.xex"));
+    public string GameRoot
+    {
+        get
+        {
+            try
+            {
+                var value = SettingsFile.StringValue(SettingsFile.Read(ConfigPath, "game_data_root",
+                    JsonSerializer.Serialize(Path.Combine(ActiveRoot, "game"))));
+                if (string.IsNullOrWhiteSpace(value)) throw new ArgumentException("Empty game folder.");
+                return Path.GetFullPath(value, ActiveRoot);
+            }
+            catch (Exception error) when (error is JsonException or ArgumentException or IOException or UnauthorizedAccessException or NotSupportedException)
+            {
+                throw new IOException("The installed game folder setting cannot be read. In Game setup, choose your installed game folder again. Your saves are intact.", error);
+            }
+        }
+    }
+    public string? GameFolderWarning
+    {
+        get { try { _ = GameRoot; return null; } catch (IOException error) { return error.Message; } }
+    }
+    public bool HasGame
+    {
+        get { try { return File.Exists(Path.Combine(GameRoot, "default.xex")); } catch (IOException) { return false; } }
+    }
     public bool HasIso => !string.IsNullOrWhiteSpace(Preferences.IsoPath) && File.Exists(Preferences.IsoPath);
 
     public LauncherState(string root)
@@ -200,6 +222,8 @@ public sealed class LauncherState
         {
             try { Preferences = JsonSerializer.Deserialize<LauncherPreferences>(File.ReadAllText(path)) ?? new(); }
             catch (JsonException) { PreferencesWarning = "Launcher preferences could not be read. Game settings and saves are intact."; }
+            catch (Exception error) when (error is IOException or UnauthorizedAccessException)
+            { PreferencesWarning = "Launcher preferences are unavailable. Close any program using hope-launcher.json and reopen HOPE. Game settings and saves are intact."; }
         }
         if (Preferences.CareerId != null && !Careers.List(BundleRoot).Any(choice => choice.Id == Preferences.CareerId))
         {
@@ -239,6 +263,7 @@ public sealed class LauncherState
 
     public ProcessStartInfo BuildStartInfo()
     {
+        _ = GameRoot; // Do not silently target another installation after config damage.
         if (!File.Exists(GameExecutable)) throw new FileNotFoundException("The HOPE game executable is missing. Keep HOPE.exe and skate3.exe in the same folder.");
         if (!HasGame && !HasIso) throw new InvalidOperationException("Choose your own Skate 3 Xbox 360 ISO in Game setup first.");
         var info = new ProcessStartInfo(GameExecutable) { WorkingDirectory = ActiveRoot, UseShellExecute = false };

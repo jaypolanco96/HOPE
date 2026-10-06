@@ -8,7 +8,7 @@ A Windows launcher and PC-focused community update for **Skate3Recomp by [mchugh
 
 ## Current build
 
-Launcher **0.6.4** accompanies game **2.0.0.41-dev.ge7ca86e**, including player-owned DLC import and the clothing capture/recovery correction. These are locally built development versions. No downloadable HOPE release has been published to GitHub yet.
+Launcher **0.6.5** accompanies game **2.0.0.41-dev.ge7ca86e**, including player-owned DLC import, career-page refresh fixes and safer configuration recovery. The native game includes the clothing capture/recovery correction. These are locally built development versions. No downloadable HOPE release has been published to GitHub yet.
 
 HOPE's WPF launcher targets Windows. The underlying upstream project supports other platforms; HOPE's additions have not been validated on Linux or macOS. See [current status](docs/CURRENT-STATUS.md), [changelog](CHANGELOG.md), and [four-phase roadmap](phase1/UPDATE-ROADMAP.md).
 

@@ -124,7 +124,7 @@ public partial class MainWindow : Window, IDisposable
             var running = state.IsGameRunning();
             StatusBadge.Text = running ? "●  SESSION IN PROGRESS" : state.HasGame ? "●  READY TO ROLL" : "●  YOUR ISO NEEDED";
             ReadyTitle.Text = running ? "Your session is running." : state.HasGame ? "Your next line is waiting." : "Start with your own Skate 3 ISO.";
-            ReadyDetail.Text = state.HasGame ? "Game files installed • Your career stays with this copy" : "Choose your Xbox 360 ISO in Game setup.";
+            ReadyDetail.Text = state.GameFolderWarning ?? (state.HasGame ? "Game files installed • Your career stays with this copy" : "Choose your Xbox 360 ISO in Game setup.");
             PlayButton.Content = running ? "GAME IS RUNNING" : state.HasGame ? "LET’S SKATE  →" : "SET UP HOPE  →";
             PlayButton.IsEnabled = !running && !importingDlc;
             CareerCombo.IsEnabled = !running && !importingDlc;
@@ -213,8 +213,9 @@ public partial class MainWindow : Window, IDisposable
         Run(() =>
         {
             state.SelectCareer(choice.Id);
-            if (page == "Mods") RefreshMods();
             LoadGraphics();
+            // Rebuild career-scoped lists and clear old save confirmations.
+            Navigate(page);
             RefreshStatus();
             Feedback.Text = "Career selected. Play continues this career; other careers stay separate.";
         });
@@ -233,6 +234,7 @@ public partial class MainWindow : Window, IDisposable
         state.SelectCareer(id);
         ReloadCareers();
         LoadGraphics();
+        Navigate(page);
         RefreshStatus();
         Feedback.Text = "New career ready. Choose Play to start setup. Switch back using the career list.";
       }

@@ -2,6 +2,23 @@
 
 These entries describe local development builds, not published release assets.
 
+## Launcher 0.6.5 — Career refresh and setup recovery
+
+- Refresh all visible career pages after switching/creating a career. Save
+  lists and recovery backups no longer remain scoped to the previous career;
+  old removal confirmations are cleared. Existing removal scope checks remain.
+- Fix the updater's career ID check: HOPE creates 32-character N-format GUID
+  folders, but the installer only recognized hyphenated D-format GUIDs. Both
+  are now updated, and a locked career program blocks the entire update.
+- Keep Game setup accessible when launcher preferences are locked/unreadable.
+  Preserve the preferences file and show recovery guidance.
+- Handle invalid, empty or unreadable game-folder settings without breaking
+  readiness checks. Block launch until repaired instead of silently choosing
+  another game folder. Selecting the installed folder repairs the setting.
+- Release build, 164 launcher fixtures and 24 synthetic installer checks passed.
+  No game was launched by these checks. Native game remains 2.0.0.41.
+
+
 ## Launcher 0.6.4 — Player-owned DLC import
 
 - Add multi-file DLC import, package names/sizes, refresh and folder access

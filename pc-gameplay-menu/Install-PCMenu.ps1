@@ -41,7 +41,8 @@ if (Test-Path -LiteralPath $careers) {
     Assert-OrdinaryPath $careers
     foreach ($career in Get-ChildItem -LiteralPath $careers -Directory) {
         $id = [guid]::Empty
-        if ([guid]::TryParseExact($career.Name, 'D', [ref]$id) -and
+        if (([guid]::TryParseExact($career.Name, 'N', [ref]$id) -or
+             [guid]::TryParseExact($career.Name, 'D', [ref]$id)) -and
             (Test-Path -LiteralPath (Join-Path $career.FullName 'career.ready'))) {
             Assert-OrdinaryPath $career.FullName
             $roots += $career.FullName
