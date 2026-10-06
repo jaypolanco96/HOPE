@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <title>HOPE street skate launcher</title>
+  <rect x="8" y="8" width="240" height="240" rx="50" fill="#111022"/>
+  <path d="M62 49h34v42h64V49h34v116h-34v-43H96v43H62z" fill="#d8ff3e"/>
+  <rect x="47" y="178" width="162" height="20" rx="10" fill="#ff55ca"/>
+  <circle cx="80" cy="211" r="8" fill="#68ffe4"/>
+  <circle cx="176" cy="211" r="8" fill="#68ffe4"/>
+</svg>

@@ -8,7 +8,8 @@
     <AssemblyName>HOPE</AssemblyName>
     <Product>HOPE — Hills, Ollies, Pavement, Expression</Product>
     <Description>HOPE launcher, based on Skate3Recomp by mchughalex</Description>
-    <Version>0.6.2</Version>
+    <Version>0.6.3</Version>
+    <ApplicationIcon>Branding/hope.ico</ApplicationIcon>
   </PropertyGroup>
-  <ItemGroup><EmbeddedResource Include="Mods/BuiltIn/*.hope-mod.json" /></ItemGroup>
+  <ItemGroup><EmbeddedResource Include="Mods/BuiltIn/*.hope-mod.json" /><Resource Include="Branding/hope.ico" /></ItemGroup>
 </Project>

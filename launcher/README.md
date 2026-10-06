@@ -6,7 +6,9 @@ HOPE is a community update built on **Skate3Recomp by mchughalex**: https://gith
 
 ## Start
 
-Open `C:\GOG Games\Skate3Recomp-Windows\HOPE-Phase3-Review\HOPE.exe` in File Explorer. Keep the launcher and its support files beside `skate3.exe` and the matching runtime DLL. The local HOPE bundle uses portable settings and a copied career, separate from the original installation.
+Open `C:\GOG Games\Skate3Recomp-Windows\Play HOPE.lnk` or `HOPE\HOPE.exe` in File Explorer. Keep the launcher and its support files beside `skate3.exe` and the matching runtime DLL. The local HOPE bundle uses portable settings and a copied career, separate from the original installation.
+
+Launcher 0.6.3 embeds the original HOPE H/skateboard icon in the executable and WPF window. Editable vector art, PNG, multi-resolution ICO and a reproducible raster generator are in Branding. Older local builds are preserved under Archive/Update packages and Archive/Preview builds; launcher guides/build records are in HOPE/docs. The folder-moves.json archive ledger records the relocation. Active saves, settings, game data and rollback copies were preserved.
 
 Home offers Play, Graphics, My saves, Game setup, and Credits. Use a mouse, Tab/arrow keys and Enter, or an XInput controller. Controller D-pad/stick up/down moves focus, left/right changes selections, A activates, and B cancels save removal or returns Home. Escape also returns Home or cancels confirmation. Native controller navigation needs an actual controller test; PlayStation/generic controller support beyond XInput is not implemented in this launcher.
 
