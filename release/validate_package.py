@@ -64,6 +64,28 @@ for argument in sys.argv[1:]:
                 raise ValueError("Not Linux x64")
         elif data[:4] != b"\xcf\xfa\xed\xfe" or struct.unpack_from("<I", data, 4)[0] != 0x100000C:
             raise ValueError("Not macOS arm64")
+        if metadata["platform"] == "macos-arm64":
+            names = {PurePosixPath(name).name for name in files if len(PurePosixPath(name).parts) == 2}
+            imports = 0
+            for name, binary in files.items():
+                if not (name.endswith(".dylib") or name == root + "/skate3"):
+                    continue
+                if binary[:4] != b"\xcf\xfa\xed\xfe" or struct.unpack_from("<I", binary, 4)[0] != 0x100000C:
+                    raise ValueError("Non-arm64 Mac runtime")
+                commands = struct.unpack_from("<I", binary, 16)[0]
+                position = 32
+                for _ in range(commands):
+                    command, size = struct.unpack_from("<II", binary, position)
+                    if command in (12, 0x80000018, 0x8000001F, 0x80000023):
+                        offset = struct.unpack_from("<I", binary, position + 8)[0]
+                        dependency = binary[position + offset:position + size].split(b"\0")[0].decode()
+                        leaf = PurePosixPath(dependency).name
+                        bundled = dependency in ("@loader_path/" + leaf, "@rpath/" + leaf) and leaf in names
+                        if not dependency.startswith(("/System/Library/", "/usr/lib/")) and not bundled:
+                            raise ValueError("Unresolved Mac dependency: " + dependency)
+                        imports += 1
+                    position += size
+            print(f"Verified {imports} Mac imports resolve to bundled/system libraries.")
         if metadata["launcher_included"] or metadata["live_gameplay_tested"]:
             raise ValueError("Native preview metadata overstates support")
     print(f"Verified {package.name}: checksums, architecture, notices and fresh-install contents ({len(files)} files).")

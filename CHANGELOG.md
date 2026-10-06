@@ -1,6 +1,23 @@
 # HOPE changelog
 
-These entries describe local development builds, not published release assets.
+Historical entries describe local development builds. The community preview below is published as a GitHub prerelease.
+
+## HOPE 0.6.5 Community Preview — Windows, Linux and macOS packages
+
+- Windows x64 fresh-install archive: launcher 0.6.5, native game
+  2.0.0.41-dev.ge7ca86e and bundled .NET launcher runtime.
+- Experimental Linux x64 and Apple Silicon macOS native-game archives.
+  These do not include the Windows launcher or its mod/save/DLC import UI.
+  Mac target: macOS 15+, ad-hoc signed, not notarized. Linux target:
+  Ubuntu 24.04 or compatible, GTK3, Vulkan drivers and curl.
+- Preserve TU3 runtime hooks when compiling existing TU3-generated inputs;
+  make the three isolated policy/texture regression targets portable.
+- Windows launcher passed 164 fixture checks. Each native CI platform passed
+  39 clothing, 15 particle isolation and 9 texture checks. Architecture,
+  archive hashes, notices, fresh contents and native dependencies inspected.
+- No retail files, DLC, gameplay backgrounds or personal saves/settings
+  included. Live gameplay, shirt appearance and difficulty recovery remain
+  unverified. See [release/package scope](docs/RELEASES.md).
 
 ## Launcher 0.6.5 — Career refresh and setup recovery
 

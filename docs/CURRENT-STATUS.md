@@ -5,6 +5,13 @@ Updated October 6, 2026. Launcher 0.6.5 is installed with native game
 a459a73. Launcher icon source: 7c0a937. Later documentation commits do not
 change those installed program versions.
 
+The [0.6.5 Community Preview](https://github.com/jaypolanco96/HOPE/releases/tag/hope-v0.6.5-preview.1)
+provides Windows x64 launcher/game and experimental Linux x64/macOS arm64
+native-game packages. The launcher remains Windows-only. Native CI source:
+a3a8d4f; each native platform passed 63 isolated checks. These are not live
+gameplay tests. Mac minimum: Apple Silicon/macOS 15+, ad-hoc signed and not
+notarized. See [package scope](RELEASES.md).
+
 | Area | Implemented | Still needs confirmation |
 | --- | --- | --- |
 | Launcher | PC navigation, graphics, careers, saves, mods, help, icon | Real controller/hardware and install/recovery flows |

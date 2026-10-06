@@ -8,9 +8,11 @@ A Windows launcher and PC-focused community update for **Skate3Recomp by [mchugh
 
 ## Current build
 
-Launcher **0.6.5** accompanies game **2.0.0.41-dev.ge7ca86e**, including player-owned DLC import, career-page refresh fixes and safer configuration recovery. The native game includes the clothing capture/recovery correction. These are locally built development versions. No downloadable HOPE release has been published to GitHub yet.
+**[Download the HOPE 0.6.5 Community Preview](https://github.com/jaypolanco96/HOPE/releases/tag/hope-v0.6.5-preview.1).** Windows x64 includes the launcher and native game. Linux x64 and Apple Silicon macOS packages are experimental **native-game-only** previews; they do not include the HOPE launcher. Each package requires your own Skate 3 Xbox 360 ISO/game files.
 
-HOPE's WPF launcher targets Windows. The underlying upstream project supports other platforms; HOPE's additions have not been validated on Linux or macOS. See [current status](docs/CURRENT-STATUS.md), [changelog](CHANGELOG.md), and [four-phase roadmap](phase1/UPDATE-ROADMAP.md).
+The Windows launcher **0.6.5** accompanies game **2.0.0.41-dev.ge7ca86e**, including player-owned DLC import, career-page refresh fixes and safer configuration recovery. The native game includes the clothing capture/recovery correction. Packages are development previews, not verified complete gameplay releases. Install into a new writable folder and preserve your existing career.
+
+HOPE's WPF launcher targets Windows. Linux x64 and macOS arm64 native builds passed compilation and isolated regression checks; live gameplay remains unverified. The Mac preview targets Apple Silicon/macOS 15+ and is ad-hoc signed, not notarized. See [platform/package limits](docs/RELEASES.md), [current status](docs/CURRENT-STATUS.md), [changelog](CHANGELOG.md), and [four-phase roadmap](phase1/UPDATE-ROADMAP.md).
 
 ## What HOPE adds
 

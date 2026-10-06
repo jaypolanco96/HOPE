@@ -64,7 +64,7 @@ These are native-game builds, NOT the Windows HOPE launcher. Career management,
 launcher mod import and launcher DLC import are unavailable here. Place your owned
 DLC packages in dlc beside skate3 for native installation on next launch.
 Use Start for Skate 3's original menu; the native PC settings expose supported controls.
-Linux target: Ubuntu 24.04 or compatible, GTK3 and Vulkan GPU drivers required.
+Linux target: Ubuntu 24.04 or compatible, GTK3, Vulkan drivers and curl required.
 macOS target: Apple Silicon, macOS 15+, Vulkan through bundled MoltenVK.
 Mac binaries are ad-hoc signed, not Developer ID signed or notarized.
 Build/isolated tests do not verify actual gameplay. Shirt/difficulty issues remain open.
@@ -78,6 +78,8 @@ for file in sdk.rglob("*"):
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(file, target)
 archive_path = output / (folder.name + ".tar.gz")
+if platform == "macos-arm64":
+    shutil.copytree(Path("release/notices"), folder / "notices" / "macos-vulkan", dirs_exist_ok=True)
 with tarfile.open(archive_path, "w:gz") as archive:
     archive.add(folder, arcname=folder.name)
 checksum = hashlib.sha256(archive_path.read_bytes()).hexdigest()
