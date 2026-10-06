@@ -5,6 +5,7 @@
 // conforming entity registers and a non-conforming one self-limits out.
 
 #include "native/skate3_native_entity.h"
+#include "hope_clothing_state.h"
 
 #include <algorithm>
 #include <atomic>
@@ -544,16 +545,7 @@ uint32_t ServeInstancePalette(uint8_t* base, uint32_t ctx, float* out,
   }
   // Row sanity (packed 3x4 rotation norms in the bank-gate range): a
   // stale/unpacked buffer fails and the caller keeps its fallback.
-  for (uint32_t r = 0; r < count; ++r) {
-    float n = 0.0f;
-    for (int j = 0; j < 3; ++j) {
-      const float* m = out + r * 12;
-      n += m[j] * m[j] + m[4 + j] * m[4 + j] + m[8 + j] * m[8 + j];
-    }
-    if (!(n > 0.0016f && n < 2000.0f)) {
-      return 0;
-    }
-  }
+  if (!hope::PackedPaletteSane(out, count)) return 0;
   return count;
 }
 
@@ -574,11 +566,15 @@ bool RopaGarmentDropped(uint8_t* base, uint32_t ctx, uint32_t vb_obj) {
   if (gate != 0 && n >= 1) {
     for (uint32_t i = 0; i < n; ++i) {
       uint32_t target = 0, vb0 = 0, vb1 = 0;
-      if (LoadU32(base, info.entity + kRopaClothTarget + i * 4, &target) &&
-          target != 0 &&
-          LoadU32(base, info.entity + kRopaVb + i * 8, &vb0) &&
-          LoadU32(base, info.entity + kRopaVb + i * 8 + 4, &vb1) &&
-          (vb0 == vb_obj || vb1 == vb_obj)) {
+      if (!LoadU32(base, info.entity + kRopaClothTarget + i * 4, &target)) {
+        return false;  // Torn/unreadable table is not proof of removal.
+      }
+      if (target == 0) continue;
+      if (!LoadU32(base, info.entity + kRopaVb + i * 8, &vb0) ||
+          !LoadU32(base, info.entity + kRopaVb + i * 8 + 4, &vb1)) {
+        return false;
+      }
+      if (vb0 == vb_obj || vb1 == vb_obj) {
         return false;  // still a live cloth target
       }
     }

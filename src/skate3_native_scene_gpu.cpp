@@ -7,6 +7,7 @@
 #include "skate3_native_scene.h"
 #include "hope_crowd_mods.h"
 #include "hope_particle_texture.h"
+#include "hope_clothing_state.h"
 
 #include "generated/skate3_init.h"
 
@@ -1108,6 +1109,8 @@ bool DecodeMesh(nrhi::Device* device, uint8_t* base, const DrawItem& item,
   // shape N and shows none of it).
   if (item.ropa) {
     out.ropa_verts.assign(dst, dst + size_t(num_verts) * 14);
+    out.ropa_skinned = item.skinned;
+    out.ropa_ctx = item.ctx;
   }
   device->Unmap(vb);
   // Blend indices outside the captured palette read garbage rows and mangle
@@ -4890,7 +4893,8 @@ void PrewarmCommit(const NativeGuestOutputRenderContext& context,
                 std::chrono::steady_clock::now().time_since_epoch())
                 .count();
         ring.push_back(
-            {r.buffers.dyn_seq, now_s, std::move(r.buffers.ropa_verts)});
+            {r.buffers.dyn_seq, now_s, std::move(r.buffers.ropa_verts),
+             r.buffers.ropa_skinned, r.buffers.ropa_ctx});
         // The 8-tap boxcar kernel reaches filter_w/2 (~25 ms) past the
         // play clock (itself ~2 guest periods behind), plus decode-latency
         // slack. Generations arrive per rendered frame while the cloth sim
@@ -4905,7 +4909,11 @@ void PrewarmCommit(const NativeGuestOutputRenderContext& context,
         }
       }
       if (mit != g_r.meshes.end() &&
-          (mit->second.fingerprint == r.buffers.fingerprint || superseded)) {
+          ((mit->second.fingerprint == r.buffers.fingerprint &&
+            (!r.item.ropa ||
+             hope::ClothDecodeMatches(r.buffers.ropa_skinned, r.buffers.ropa_ctx,
+                                      mit->second.ropa_skinned, mit->second.ropa_ctx))) ||
+           superseded)) {
         // Identical content already cached (lost the race against the draw
         // path / an earlier result), or a NEWER dynamic decode already
         // landed (multi-worker reordering must not step the cloth
@@ -6611,6 +6619,12 @@ bool RenderShadowAtlas(const NativeGuestOutputRenderContext& context,
       // frame behind the sim; a first-sight caster shadows 1-2 frames late.
       if (!g_r.meshes.contains(item.mesh)) {
         continue;
+      }
+      const MeshBuffers& caster_buffers = g_r.meshes.at(item.mesh);
+      if (item.ropa && !hope::ClothDecodeMatches(
+              item.skinned, item.ctx, caster_buffers.ropa_skinned,
+              caster_buffers.ropa_ctx)) {
+        continue;  // Shadow geometry must obey the same mode as the shirt.
       }
       Caster c{&item, 0, false, false, nullptr};
       if (item.dynobj == 2) {
@@ -8442,6 +8456,14 @@ bool RenderScene(const NativeGuestOutputRenderContext& context, void* /*user_dat
     }
     it->second.last_used_frame = frame_number;
     const MeshBuffers& buffers = it->second;
+    if (item.ropa &&
+        !hope::ClothDecodeMatches(item.skinned, item.ctx,
+                                 buffers.ropa_skinned, buffers.ropa_ctx)) {
+      // The worker will publish this mode's snapshot. Drawing an older
+      // opposite-mode decode skins simulated positions or drops skinning
+      // from bind-pose geometry, producing the detached-shirt ribbon.
+      return;
+    }
     if (prof_items) {
       di_t1 = PerfClock::now();
     }
@@ -9573,7 +9595,7 @@ bool RenderScene(const NativeGuestOutputRenderContext& context, void* /*user_dat
     // from the ring (evicted / decode in flight) renormalize over what IS
     // present when at least half the kernel's weight survives.
     VbBinding item_vbv = buffers.vb_view;
-    if (item.ropa && item.shape_count > 0 &&
+    if (item.ropa && !item.skinned && item.shape_count > 0 &&
         REXCVAR_GET(skate3_native_render_scene_ropa_blend)) {
       const std::vector<float>* gv[DrawItem::kShapeGens] = {};
       float gw[DrawItem::kShapeGens] = {};
@@ -9604,6 +9626,10 @@ bool RenderScene(const NativeGuestOutputRenderContext& context, void* /*user_dat
           for (const RendererState::RopaGen& g : rit->second) {
             if (g.seq != item.shape_seq[k]) {
               continue;
+            }
+            if (!hope::ClothDecodeMatches(item.skinned, item.ctx,
+                                          g.skinned, g.ctx)) {
+              break;  // Never blend a bind-pose or another owner's drape.
             }
             if (g.verts.size() != want_floats) {
               break;  // stale-size generation (re-stream/outfit swap)

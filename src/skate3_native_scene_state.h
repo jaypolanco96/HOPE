@@ -498,6 +498,8 @@ inline std::unordered_map<uint32_t, LwRetained> g_lw_last_items;
 // only.
 struct RopaResolvedState {
   bool skinned = false;
+  uint32_t ctx = 0;
+  uint32_t vb_bytes = 0;
   float world[16] = {};
   std::vector<float> bones;
   // Publish frame of the cached state: the rescues below exist to bridge

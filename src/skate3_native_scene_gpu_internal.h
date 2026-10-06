@@ -51,6 +51,10 @@ struct MeshBuffers {
   // results older than the cached entry so multi-worker reordering cannot
   // step the cloth backwards a frame. 0 on static decodes.
   uint64_t dyn_seq = 0;
+  // ROPA decodes zero blend attributes in rigid mode. Payload bytes alone
+  // cannot identify a usable decode after the simulation mode changes.
+  bool ropa_skinned = false;
+  uint32_t ropa_ctx = 0;
   // Double-sided sheet prop (banners/flags): most triangles have an
   // opposite-winding twin ~1cm behind, and the two faces map to DIFFERENT
   // lightmap atlas cells (lit vs shaded side). Drawn without culling both
@@ -823,6 +827,8 @@ struct RendererState {
     // drape renders the garment rotated/offset from the body).
     double t = 0.0;
     std::vector<float> verts;  // num_verts x 14 floats (scene VS layout)
+    bool skinned = false;
+    uint32_t ctx = 0;
   };
   std::unordered_map<uint32_t, std::deque<RopaGen>> ropa_shapes;
   static constexpr uint32_t kRopaRegionSize = 1u << 20;

@@ -7,6 +7,7 @@
 #include "skate3_native_scene.h"
 #include "hope_crowd_mods.h"
 #include "hope_particle_draw.h"
+#include "hope_clothing_state.h"
 
 #include "generated/skate3_init.h"
 
@@ -3841,13 +3842,11 @@ int ScoreRigidAffine(uint8_t* base, uint32_t bank, uint32_t m, const DrawItem& i
       clip[r] = vp[r * 4] * q[0] + vp[r * 4 + 1] * q[1] + vp[r * 4 + 2] * q[2] +
                 vp[r * 4 + 3];
     }
-    const float aw = std::abs(clip[3]) < 1.0f ? 1.0f : std::abs(clip[3]);
     ++n;
-    if (std::abs(clip[0]) <= 1.5f * aw && std::abs(clip[1]) <= 1.5f * aw) {
+    if (hope::ClothSampleInClip(clip, 1.5f)) {
       ++ok;
     }
-    if (clip[3] > 0.0f && std::abs(clip[0]) <= 6.0f * aw &&
-        std::abs(clip[1]) <= 6.0f * aw) {
+    if (hope::ClothSampleInClip(clip, 6.0f)) {
       ++loose;
     }
   }
@@ -3897,6 +3896,23 @@ bool PublishedPaletteSane(uint8_t* base, const DrawItem& item,
 // Returns false when the bank could not be consumed for this item (ropa
 // rigid matrix implausible or off-clip = stale bank); the caller must
 // leave/mark the item pending so a later matching draw re-captures it.
+// A fresh completed cloth job plus the owner's garment table is stronger
+// mode evidence than a reused shader bank. In particular, a shadow palette
+// leaves rotation coefficients at c7 that can be positive OR negative.
+bool ResolveLiveRopaState(uint8_t* base, DrawItem& item) {
+  float rows[12];
+  if (!item.ropa ||
+      !skate3::native_entity::ServeRopaWorld(base, item.ctx, item.vb_obj, rows)) {
+    return false;
+  }
+  hope::ClothWorldFromRows(rows, item.world);
+  item.skinned = false;
+  item.bones.clear();
+  item.shape_count = 0;
+  g_ropa_rigid.fetch_add(1, std::memory_order_relaxed);
+  return true;
+}
+
 bool CaptureSkinnedState(uint8_t* base, uint32_t bank, uint32_t palette_base,
                          DrawItem& item) {
   // Refuse captures staged by AUX perspective passes (skater-portrait RTTs):
@@ -3915,6 +3931,12 @@ bool CaptureSkinnedState(uint8_t* base, uint32_t bank, uint32_t palette_base,
           item.mesh, n);
     }
     return false;
+  }
+  if (item.ropa &&
+      REXCVAR_GET(skate3_native_render_scene_entity_ropa_world_primary) &&
+      ResolveLiveRopaState(base, item)) {
+    // Keep validated material/lighting caches: the bank may be foreign.
+    return true;
   }
   if (item.ropa && palette_base != 0) {
     const bool main_pass = palette_base >= 7;
@@ -3949,7 +3971,14 @@ bool CaptureSkinnedState(uint8_t* base, uint32_t bank, uint32_t palette_base,
           LoadGuestF32(base, bank + ((m + 2) * 4 + 2) * 4),
           LoadGuestF32(base, bank + ((m + 2) * 4 + 3) * 4));
     }
-    if (flag_x > 0.0f) {
+    const hope::ClothMode mode = hope::ClothFlagMode(flag_x);
+    if (mode == hope::ClothMode::kUnknown) {
+      // A rotating body/shadow bone is not a cloth flag. Previously its
+      // sign alone flipped the garment between rigid and skinned modes.
+      g_ropa_stale.fetch_add(1, std::memory_order_relaxed);
+      return false;
+    }
+    if (mode == hope::ClothMode::kSkinned) {
       // Sim inactive: the palette sits one register late (c5/c8). The LAYOUT
       // is exact, but the BANK can still be foreign, the same stale-bank
       // hazard the rigid branch below scores against (the flag itself was
@@ -7031,6 +7060,13 @@ void InterpolateDynamicItems(uint8_t* base, FrameScene& scene, double now) {
     }
     DynHist& h = *hp;
     h.seen = s_frame;
+    if (item.ropa && h.count > 0 &&
+        (!h.ring[h.newest].b.empty()) != skinned) {
+      // Reset both directions, before the ingest spacing floor. Otherwise
+      // a skin-to-simulation switch could keep bind-pose history alive.
+      h.count = 0;
+      h.period = 0.0;
+    }
     if (trk != nullptr) {
       trk->ring_n = h.count;
       trk->per_ms = float(h.period * 1e3);
@@ -8800,7 +8836,9 @@ void BuildFrameScene(uint8_t* base, const SubmitRecord* records, size_t count) {
         const auto cit = g_ropa_state_cache.find(item.mesh);
         if (cit != g_ropa_state_cache.end() && cit->second.skinned &&
             cit->second.bones.size() == item.bones.size() &&
-            g_guest_frame - cit->second.frame <= 30) {
+            hope::ClothCacheUsable(g_guest_frame, cit->second.frame,
+                                  item.ctx, cit->second.ctx,
+                                  item.vb_bytes, cit->second.vb_bytes)) {
           item.bones = cit->second.bones;
           item.dbg_src = 6;
           healed = true;
@@ -8853,8 +8891,13 @@ void BuildFrameScene(uint8_t* base, const SubmitRecord* records, size_t count) {
       }
       if (item.ropa) {
         // Remember the resolved mode + transform (see g_ropa_state_cache).
-        if (g_ropa_state_cache.size() < 512) {
+        // Recovered state is not a fresh capture. Refreshing its age here
+        // let a repeatedly refused shirt live forever at an old pose.
+        if (item.dbg_src != 4 && item.dbg_src != 6 &&
+            g_ropa_state_cache.size() < 512) {
           RopaResolvedState& c = g_ropa_state_cache[item.mesh];
+          c.ctx = item.ctx;
+          c.vb_bytes = item.vb_bytes;
           c.skinned = item.skinned && !item.bones.empty();
           std::memcpy(c.world, item.world, sizeof(c.world));
           c.bones = item.bones;
@@ -8987,7 +9030,9 @@ void BuildFrameScene(uint8_t* base, const SubmitRecord* records, size_t count) {
           resolved.bones.assign(rows, rows + size_t(n) * 12);
           resolved.pending = false;
           resolved.caster_bank = false;
-          resolved.dbg_src = 4;
+          // Fresh authoritative owner palette, not last-frame rescue.
+          // Enqueue its current skinned decode when the mode switches.
+          resolved.dbg_src = 12;
           if (resolved.ctx != 0) {
             dyn_slot.try_emplace(resolved.ctx, scene.items.size() - 1);
           }
@@ -8995,9 +9040,27 @@ void BuildFrameScene(uint8_t* base, const SubmitRecord* records, size_t count) {
         }
         continue;
       }
+      // Resolve against this tick's live owner before falling back to an
+      // old pose. This also works when BankPaletteBase could not classify
+      // a foreign/tail-clobbered bank, so the post-draw path never ran.
+      DrawItem live = *cand;
+      if (REXCVAR_GET(skate3_native_render_scene_entity_ropa_world_primary) &&
+          ResolveLiveRopaState(base, live)) {
+        live.pending = false;
+        live.caster_bank = false;
+        live.dbg_src = 12;
+        scene.items.push_back(std::move(live));
+        if (cand->ctx != 0) {
+          dyn_slot.try_emplace(cand->ctx, scene.items.size() - 1);
+        }
+        g_ropa_rescued.fetch_add(1, std::memory_order_relaxed);
+        continue;
+      }
       const auto rit = g_ropa_state_cache.find(mesh);
       if (rit == g_ropa_state_cache.end() ||
-          g_guest_frame - rit->second.frame > 30) {
+          !hope::ClothCacheUsable(g_guest_frame, rit->second.frame,
+                                 cand->ctx, rit->second.ctx,
+                                 cand->vb_bytes, rit->second.vb_bytes)) {
         continue;
       }
       scene.items.push_back(*cand);
@@ -9491,7 +9554,12 @@ void BuildFrameScene(uint8_t* base, const SubmitRecord* records, size_t count) {
     // drape blends against shapes from the wrong instant (speed-scaled
     // garment flicker). High-rate capacity lives in the CONSUMERS instead
     // (the resident generation ring and kShapeGens).
-    static std::unordered_map<uint32_t, uint64_t> s_dyn_fp_sent;
+    struct DynSent {
+      uint64_t fingerprint = 0;
+      uint32_t ctx = 0;
+      bool skinned = false;
+    };
+    static std::unordered_map<uint32_t, DynSent> s_dyn_fp_sent;
     static uint64_t s_dyn_seq = 0;
     if (s_dyn_fp_sent.size() > 4096) {
       s_dyn_fp_sent.clear();
@@ -9516,12 +9584,11 @@ void BuildFrameScene(uint8_t* base, const SubmitRecord* records, size_t count) {
       // weight/index attributes, see DecodeMesh), so a mode flip must
       // re-enqueue even when the payload bytes did not change: fold the
       // resolved mode into the dedup key.
-      const uint64_t fp_key =
-          item.fingerprint ^
-          ((item.ropa && item.skinned && !item.bones.empty()) ? 1u : 0u);
       const auto prev = s_dyn_fp_sent.find(item.mesh);
       const bool first_sight = prev == s_dyn_fp_sent.end();
-      if (!first_sight && prev->second == fp_key) {
+      if (!first_sight && prev->second.fingerprint == item.fingerprint &&
+          (!item.ropa || hope::ClothDecodeMatches(
+              item.skinned, item.ctx, prev->second.skinned, prev->second.ctx))) {
         continue;
       }
       DynDecodeJob job;
@@ -9536,7 +9603,7 @@ void BuildFrameScene(uint8_t* base, const SubmitRecord* records, size_t count) {
       if (!GuestTryCopy(job.ib.data(), base + item.ib_addr, job.ib.size())) {
         continue;
       }
-      s_dyn_fp_sent[item.mesh] = fp_key;
+      s_dyn_fp_sent[item.mesh] = {item.fingerprint, item.ctx, item.skinned};
       if (item.ropa) {
         // The pose <-> shape pairing key (see DynPose::shape_seq). Recorded
         // at CREATION (the delay queue below postpones submission, not
