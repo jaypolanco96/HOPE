@@ -8,7 +8,7 @@ A Windows launcher and PC-focused community update for **Skate3Recomp by [mchugh
 
 ## Current build
 
-Launcher **0.6.3** accompanies game **2.0.0.41-dev.ge7ca86e**, including the clothing capture/recovery correction. These are locally built development versions. No downloadable HOPE release has been published to GitHub yet.
+Launcher **0.6.4** accompanies game **2.0.0.41-dev.ge7ca86e**, including player-owned DLC import and the clothing capture/recovery correction. These are locally built development versions. No downloadable HOPE release has been published to GitHub yet.
 
 HOPE's WPF launcher targets Windows. The underlying upstream project supports other platforms; HOPE's additions have not been validated on Linux or macOS. See [current status](docs/CURRENT-STATUS.md), [changelog](CHANGELOG.md), and [four-phase roadmap](phase1/UPDATE-ROADMAP.md).
 
@@ -16,6 +16,7 @@ HOPE's WPF launcher targets Windows. The underlying upstream project supports ot
 
 - **Launcher:** mouse, keyboard and XInput navigation, rounded panels, HD backgrounds, a custom executable/window icon, and visible original-creator credits.
 - **Careers and saves:** separate portable careers, save browsing, confirmed removal with recovery copies, and settings reset/restore. Editing is blocked while Skate 3 is running.
+- **DLC:** Game setup imports player-owned Skate 3 Xbox 360 single-file STFS packages into a shared library. Imports are queued for native installation next launch, with header checks and duplicate protection. See [DLC setup and limits](docs/DLC.md).
 - **PC settings:** fullscreen, VSync, frame caps, renderer selection, resolution scale, MSAA, ambient occlusion, distance fog/haze, bloom and light shafts. Advanced controls expose reflections, shadow quality/softness, AO radius/strength, mipmaps, decals, FOV and world/LOD distances. Availability depends on the renderer.
 - **Mods:** No Intro Videos, Wide Streets, Neon Crowd, Pocket Crowd and Giant Crowd; imported allowlisted settings manifests. Imported mods start disabled. Crowd styles conflict and remain cosmetic experiments. See [mod format and limits](launcher/Mods/README.md).
 - **Particles:** an original soft dust sprite with transparent blending. The hotfix separates particles from clothing, restores the original character shaders, and rejects garment-shaped draws. Effects remain experimental.

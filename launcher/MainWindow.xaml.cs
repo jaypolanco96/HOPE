@@ -25,6 +25,7 @@ public partial class MainWindow : Window, IDisposable
     private bool loading;
     private bool lastRunning;
     private bool loadingCareers;
+    private bool importingDlc;
     private readonly List<GraphicsOption> worldGraphics = AdvancedGraphics.World();
     private readonly List<GraphicsOption> nativeGraphics = AdvancedGraphics.Native();
 
@@ -54,6 +55,7 @@ public partial class MainWindow : Window, IDisposable
         });
         Loaded += (_, _) => HomeNav.Focus();
         Closed += (_, _) => Dispose();
+        Closing += (_, e) => { if (importingDlc) { e.Cancel = true; Feedback.Text = "Wait for the DLC import to finish before closing HOPE."; } };
     }
 
     public void Dispose() { monitor.Stop(); controller.Dispose(); }
@@ -97,7 +99,7 @@ public partial class MainWindow : Window, IDisposable
         if (destination == "Mods") RefreshMods();
         if (destination == "Saves") RefreshSaves();
         if (destination == "Graphics") LoadGraphics();
-        if (destination == "Setup") IsoLabel.Text = state.HasIso ? Path.GetFileName(state.Preferences.IsoPath) : "No ISO selected";
+        if (destination == "Setup") { IsoLabel.Text = state.HasIso ? Path.GetFileName(state.Preferences.IsoPath) : "No ISO selected"; Run(RefreshDlc); }
         if (destination == "Help") RefreshRecovery();
         Feedback.Text = settingsWarning ?? (destination == "Home" ? "Built for your next session." : "Changes stay with this installation.");
         Feedback.Foreground = (Brush)FindResource("Mint");
@@ -124,9 +126,10 @@ public partial class MainWindow : Window, IDisposable
             ReadyTitle.Text = running ? "Your session is running." : state.HasGame ? "Your next line is waiting." : "Start with your own Skate 3 ISO.";
             ReadyDetail.Text = state.HasGame ? "Game files installed • Your career stays with this copy" : "Choose your Xbox 360 ISO in Game setup.";
             PlayButton.Content = running ? "GAME IS RUNNING" : state.HasGame ? "LET’S SKATE  →" : "SET UP HOPE  →";
-            PlayButton.IsEnabled = !running;
-            CareerCombo.IsEnabled = !running;
-            NewCareerButton.IsEnabled = !running && state.HasGame;
+            PlayButton.IsEnabled = !running && !importingDlc;
+            CareerCombo.IsEnabled = !running && !importingDlc;
+            NewCareerButton.IsEnabled = !running && !importingDlc && state.HasGame;
+            ImportDlcButton.IsEnabled = !running && !importingDlc;
             if (lastRunning && !running) Navigate("Home");
             GraphicsForm.IsEnabled = !running;
             WorldGraphicsOptions.IsEnabled = !running;
@@ -144,6 +147,7 @@ public partial class MainWindow : Window, IDisposable
 
     private void Play_Click(object sender, RoutedEventArgs e) => Run(() =>
     {
+        if (importingDlc) { Feedback.Text = "Wait for the DLC import to finish before starting the game."; return; }
         if (state.IsGameRunning()) { Feedback.Text = "HOPE is already running. Return to your game window."; return; }
         if (!state.HasGame && !state.HasIso) { Navigate("Setup"); return; }
         var process = Process.Start(state.BuildStartInfo()) ?? throw new IOException("The game could not be started.");
@@ -151,6 +155,45 @@ public partial class MainWindow : Window, IDisposable
         Feedback.Text = state.HasGame ? "HOPE started. Start opens Skate 3's menu. Escape or RB + Start opens PC settings." : "Opening the ISO installer. Keep its window open until setup finishes.";
         RefreshStatus();
     });
+    private void RefreshDlc()
+    {
+        var packages = DlcLibrary.List(state.BundleRoot, out var unreadable);
+        DlcPackages.ItemsSource = packages;
+        DlcStatus.Text = packages.Count == 0 ? "No DLC packages imported yet." : $"{packages.Count} package(s) imported · available to all careers.";
+        if (unreadable > 0) DlcStatus.Text += $" {unreadable} file(s) could not be identified as supported Skate 3 DLC.";
+    }
+    private void RefreshDlc_Click(object sender, RoutedEventArgs e) => Run(RefreshDlc);
+    private void OpenDlc_Click(object sender, RoutedEventArgs e) => Run(() =>
+    {
+        var root = DlcLibrary.Root(state.BundleRoot);
+        if (!SaveStorage.OrdinaryPath(root)) throw new IOException("The DLC folder is linked.");
+        Directory.CreateDirectory(root);
+        Process.Start(new ProcessStartInfo(root) { UseShellExecute = true })?.Dispose();
+    });
+    private async void ImportDlc_Click(object sender, RoutedEventArgs e)
+    {
+        if (importingDlc) return;
+        try
+        {
+            if (state.IsGameRunning()) throw new IOException("Close Skate 3 before importing DLC.");
+            var picker = new OpenFileDialog { Title = "Choose your own Skate 3 Xbox 360 DLC packages", Filter = "Xbox 360 package files (all files)|*.*", Multiselect = true };
+            if (picker.ShowDialog(this) != true) return;
+            var files = picker.FileNames;
+            importingDlc = true;
+            RefreshStatus();
+            DlcStatus.Text = "Copying DLC packages… Your originals stay untouched.";
+            var results = await Task.Run(() => files.Select(file =>
+            {
+                try { return DlcLibrary.Import(file, state.BundleRoot, state.IsGameRunning); }
+                catch (Exception error) { return $"{Path.GetFileName(file)}: {error.Message}"; }
+            }).ToArray());
+            RefreshDlc();
+            DlcStatus.Text += "\n" + string.Join("\n", results);
+            Feedback.Text = "DLC import finished. Review the results in Game setup.";
+        }
+        catch (Exception error) { Feedback.Text = error.Message; }
+        finally { importingDlc = false; RefreshStatus(); }
+    }
     private void ReloadCareers()
     {
         loadingCareers = true;

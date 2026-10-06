@@ -1,6 +1,6 @@
 # Current HOPE status
 
-Updated October 5, 2026. Launcher 0.6.3 is installed with native game
+Updated October 6, 2026. Launcher 0.6.4 is installed with native game
 2.0.0.41-dev.ge7ca86e. Game behavior source: e7ca86e. SDK behavior source:
 a459a73. Launcher icon source: 7c0a937. Later documentation commits do not
 change those installed program versions.
@@ -13,9 +13,10 @@ change those installed program versions.
 | Graphics | Existing native effects exposed in launcher/overlay | Appearance, correctness and performance on real hardware |
 | Particles/clothing | Separate particle pipelines; original character shaders; corrected cloth mode, recovery age and decode consistency | New build's shirt movement retest; original effect materials |
 | Cosmetic mods | No Intro, Wide Streets, three crowd styles; settings manifest importer | Crowd appearance and shader/model edge cases |
+| DLC | Player-owned single-file STFS import; shared career library; native installation next launch | Real package installation and in-game availability |
 | Performance | F8 bounded cadence capture and analyzer | Controlled CPU/GPU/presentation baselines, optimizations and soak |
 
-Latest recorded checks: 109 installed launcher fixtures; 39 compiled
+Latest recorded checks: 139 installed launcher fixtures (30 DLC checks); 39 compiled
 clothing state regression checks; 15 compiled
 particle/cloth isolation checks; 10 texture checks; two isolated particle
 shader variants compiled for both D3D12 and Vulkan with UV/resource bindings

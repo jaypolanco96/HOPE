@@ -162,6 +162,14 @@
           <TextBlock Text="Use an ISO from your own Xbox 360 copy. If your game files are already installed, you can play without importing again." TextWrapping="Wrap" Foreground="#C8BED9" Margin="0,8,0,10"/>
           <Button Content="Choose my ISO…" HorizontalAlignment="Left" Click="ChooseIso_Click"/>
           <TextBlock x:Name="IsoLabel" Text="No ISO selected" Foreground="{StaticResource Mint}" TextWrapping="Wrap" Margin="0,3,0,20"/>
+          <Border CornerRadius="18" Background="#30243F" Padding="18" Margin="0,0,0,18"><StackPanel>
+           <TextBlock Text="ADD YOUR DLC" Foreground="{StaticResource Lime}" FontSize="21" FontWeight="Bold"/>
+           <TextBlock Text="Import your own Skate 3 Xbox 360 DLC package files. Select several at once, including files without an extension. ISOs, ZIPs, saves and title updates are not DLC packages." TextWrapping="Wrap" Foreground="#C8BED9" Margin="0,8,0,12"/>
+           <WrapPanel><Button x:Name="ImportDlcButton" Content="Import owned DLC…" Click="ImportDlc_Click" Margin="0,0,12,10"/><Button Content="Refresh list" Click="RefreshDlc_Click" Margin="0,0,12,10"/><Button Content="Open DLC folder" Click="OpenDlc_Click"/></WrapPanel>
+           <TextBlock x:Name="DlcStatus" Foreground="{StaticResource Mint}" TextWrapping="Wrap" Margin="0,0,0,8"/>
+           <ItemsControl x:Name="DlcPackages"><ItemsControl.ItemTemplate><DataTemplate><TextBlock Text="{Binding Label}" TextWrapping="Wrap" Margin="0,4"/></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+           <TextBlock Text="Shared across HOPE careers. Imported means queued: the game checks and installs packages next launch. Compatibility depends on the package and game update; check the game menus afterward. Close the game before importing. No DLC is included or linked." TextWrapping="Wrap" Foreground="#C8BED9" FontSize="14" Margin="0,12,0,0"/>
+          </StackPanel></Border>
           <Border CornerRadius="18" Background="#30243F" Padding="18" Margin="0,0,0,18"><StackPanel><TextBlock Text="BETA CONTENT" Foreground="{StaticResource Pink}" FontWeight="Bold"/><TextBlock Text="No verified playable beta pack is available in this build. A beta toggle will become available when compatible content is validated." TextWrapping="Wrap" Foreground="#C8BED9" Margin="0,8,0,0"/></StackPanel></Border>
           <TextBlock Text="2. Install and start" FontSize="21" FontWeight="Bold"/>
           <TextBlock Text="HOPE opens the existing game installer to extract your ISO and finish setup. Keep the installer open until it completes." TextWrapping="Wrap" Foreground="#C8BED9" Margin="0,8,0,10"/>

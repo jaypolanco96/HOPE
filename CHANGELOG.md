@@ -2,6 +2,19 @@
 
 These entries describe local development builds, not published release assets.
 
+## Launcher 0.6.4 — Player-owned DLC import
+
+- Add multi-file DLC import, package names/sizes, refresh and folder access
+  to Game setup. Original files remain untouched; duplicate copies are skipped.
+- Check Xbox 360 package headers, Skate 3 title ID and marketplace content
+  type; reject saves, updates, unsupported companion-file packages and linked paths.
+- Share the DLC library across main and isolated careers through launch overrides.
+  Copy outside the scanned DLC folder and commit only while the game is closed.
+- Native game remains 2.0.0.41. Imported means queued, not installed or verified
+  playable. No retail DLC is distributed. Real DLC appearance remains untested.
+- Release build and 139 launcher fixture checks passed, including 30 DLC checks.
+
+
 ## Game 2.0.0.41 — Clothing capture and recovery correction
 
 - The previous shirt hotfix failed, including with particles disabled.

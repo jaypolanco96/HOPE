@@ -247,6 +247,12 @@ public sealed class LauncherState
         info.Environment.Remove("SKATE3_INSTALL_TU");
         if (!HasGame && HasIso) info.Environment["SKATE3_INSTALL_ISO"] = Preferences.IsoPath!;
         info.Environment["HOPE_HOME_LAUNCHER"] = Path.Combine(BundleRoot, "HOPE.exe");
+        // One DLC library serves main and isolated careers without rewriting
+        // their configuration files. CLI overrides survive config loading.
+        info.ArgumentList.Add("--skate3_dlc_root=" + DlcLibrary.Root(BundleRoot));
+        info.ArgumentList.Add("--skate3_auto_install_dlc");
+        info.Environment["REX_SKATE3_DLC_ROOT"] = DlcLibrary.Root(BundleRoot);
+        info.Environment["REX_SKATE3_AUTO_INSTALL_DLC"] = "true";
         return info;
     }
 }
