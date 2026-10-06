@@ -1,7 +1,11 @@
 // Dedicated sprite shader. Character/cloth scene shaders remain unchanged.
 Texture2D<float4> diffuse : register(t0);
 SamplerState smp_clamp : register(s1);
-float4 ps_main(float2 uv : TEXCOORD1) : SV_Target {
+float4 ps_main(
+#ifdef HOPE_VULKAN
+    [[vk::location(1)]]
+#endif
+    float2 uv : TEXCOORD1) : SV_Target {
   float4 sprite = diffuse.Sample(smp_clamp, uv);
 #ifdef HDR
   // Same inverse tone curve as scene_common.hlsli PassGamma.
