@@ -17,8 +17,7 @@ output, gameplay backgrounds or installed binaries are committed here.
 
 ## Checkout
 
-The HOPE and HOPE-SDK repositories are private. Authenticate with an account
-that has access before cloning. For GitHub CLI users:
+The HOPE and HOPE-SDK repositories are public. For GitHub CLI users:
 
 ```powershell
 gh auth login

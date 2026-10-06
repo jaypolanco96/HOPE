@@ -71,6 +71,12 @@ Build/isolated tests do not verify actual gameplay. Shirt/difficulty issues rema
 Extract into a NEW writable folder. Do not overwrite an existing career.
 """, encoding="utf-8")
 (folder / "BUILD.json").write_text(json.dumps({"platform": platform, "source_commit": os.environ.get("GITHUB_SHA"), "live_gameplay_tested": False, "launcher_included": False}, indent=2))
+sdk = Path("third_party/rexglue-sdk")
+for file in sdk.rglob("*"):
+    if file.is_file() and file.name.upper().startswith(("LICENSE", "COPYING", "NOTICE")):
+        target = folder / "notices" / file.relative_to(sdk)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(file, target)
 archive_path = output / (folder.name + ".tar.gz")
 with tarfile.open(archive_path, "w:gz") as archive:
     archive.add(folder, arcname=folder.name)
