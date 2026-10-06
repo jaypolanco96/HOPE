@@ -1,6 +1,6 @@
 # HOPE: four-phase update roadmap
 
-Created October 5, 2026. Status: Phase 3 quality-of-life work started at the player's request; earlier runtime completion gates remain open. The source repository and isolated diagnostic build are ready; the installed binaries and original saves remain preserved. The menu defect is not yet reproduced or fixed.
+Updated October 5, 2026. Phase 4 measurement work and subsequent graphics/mod/particle/branding updates are implemented. All earlier live completion gates remain open. Launcher 0.6.3 and game 2.0.0.37-dev.g66ac4f3 are installed; see [current status](../docs/CURRENT-STATUS.md). Difficulty/camera and true Skate title return remain unfinished; the shirt hotfix awaits movement retesting.
 
 ## Starting evidence
 
@@ -76,7 +76,7 @@ Deliverables: before/after measurements, optimized build, release notes, and rol
 
 The player requested Phase 2 after the PC-friendly and HOPE launcher updates. Work on reliability now while retaining the Phase 1 blocker as an open high-priority issue. Each update should state what changed, its evidence, how it was checked, and any remaining limitations. Advance based on completion gates rather than calendar deadlines.
 
-Current next step: validate the Phase 3 quality-of-life preview described in `../phase3/README.md`, and collect paired controller runs using the isolated Native and Emulated diagnostic sessions described in `CONTROLLER-TEST.md`, then compare frontend transition logs. See `INVESTIGATION.md` and `BUILD-NOTES.md` for source, build, and validation details.
+Current next step: retest the player shirt with the particle/clothing isolation hotfix, validate the difficulty/camera blocker and original-menu flows, and collect repeatable Phase 4 measurements. Use the isolated Native and Emulated diagnostic sessions described in `CONTROLLER-TEST.md` to compare frontend transition logs. See `INVESTIGATION.md` and `BUILD-NOTES.md` for source, build, and validation details.
 
 Player correction: keep the original Skate 3 menu on Start, with HOPE settings separate on Escape/RB+Start. Installed the corrected controls; true in-game return to Skate 3's title screen and native menu additions remain unfinished. The static investigation is recorded in ../pc-gameplay-menu/ACTUAL-MENU-INVESTIGATION.md. Preserve Restart, Trick Book, map and replay while extending the original menu; launcher return does not satisfy title-screen return.
 

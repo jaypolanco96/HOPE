@@ -1,305 +1,78 @@
-# HOPE â€” Hills, Ollies, Pavement, Expression
+<p align="center"><img src="launcher/Branding/hope.png" width="128" alt="HOPE skateboard launcher icon"></p>
 
-This local community update builds on **Skate3Recomp by mchughalex**. The original project and contributors retain credit for the recompilation and renderer. HOPE adds the PC menu, save management, graphics controls, and a Bay Area themed Windows launcher. See [HOPE launcher](launcher/README.md) and [update roadmap](phase1/UPDATE-ROADMAP.md).
+# HOPE — Hills, Ollies, Pavement, Expression
 
-Provide your own Skate 3 Xbox 360 ISO. HOPE supplies no retail game files or ISO download links. The upstream project's documentation follows.
+A Windows launcher and PC-focused community update for **Skate3Recomp by [mchughalex](https://github.com/mchughalex/skate3recomp)**. HOPE adds career and save management, PC settings, experimental cosmetic mods, and a bright Bay Area street-skate interface.
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="banner.png">
-  <source media="(prefers-color-scheme: light)" srcset="banner-light.png">
-  <img alt="Skate 3 Native PC Recompilation" src="banner-light.png">
-</picture>
+**Bring your own Skate 3 Xbox 360 ISO. This repository provides no retail game files or ISO download links.** Gameplay backgrounds must come from your own game files or screenshots.
 
-An unofficial native recompilation of the Xbox 360 version of Skate 3, supporting Windows, Linux, and macOS.
+## Current build
 
-As of v2.0.0, the game runs on a native renderer built directly on Direct3D 12 and Vulkan instead of emulating the Xbox 360 GPU. Compared to the emulated renderer it delivers more than twice the frame rate at roughly a quarter of the GPU power draw, and on Apple Silicon the frame rate uplift is closer to 10x.
+Launcher **0.6.3** accompanies game **2.0.0.37-dev.g66ac4f3**, including the clothing/particle hotfix. These are locally built development versions. No downloadable HOPE release has been published to GitHub yet.
 
-The new native renderer is early and is likely to have issues, I haven't tested the game all the way through.
+HOPE's WPF launcher targets Windows. The underlying upstream project supports other platforms; HOPE's additions have not been validated on Linux or macOS. See [current status](docs/CURRENT-STATUS.md), [changelog](CHANGELOG.md), and [four-phase roadmap](phase1/UPDATE-ROADMAP.md).
 
-The project does not include Skate 3 retail game files. To run or build the project, you must provide files from your own legally obtained Xbox 360 copy of Skate 3.
+## What HOPE adds
 
-Native Rendering Showcase (click to go to YouTube):
+- **Launcher:** mouse, keyboard and XInput navigation, rounded panels, HD backgrounds, a custom executable/window icon, and visible original-creator credits.
+- **Careers and saves:** separate portable careers, save browsing, confirmed removal with recovery copies, and settings reset/restore. Editing is blocked while Skate 3 is running.
+- **PC settings:** fullscreen, VSync, frame caps, renderer selection, resolution scale, MSAA, ambient occlusion, distance fog/haze, bloom and light shafts. Advanced controls expose reflections, shadow quality/softness, AO radius/strength, mipmaps, decals, FOV and world/LOD distances. Availability depends on the renderer.
+- **Mods:** No Intro Videos, Wide Streets, Neon Crowd, Pocket Crowd and Giant Crowd; imported allowlisted settings manifests. Imported mods start disabled. Crowd styles conflict and remain cosmetic experiments. See [mod format and limits](launcher/Mods/README.md).
+- **Particles:** an original soft dust sprite with transparent blending. The hotfix separates particles from clothing, restores the original character shaders, and rejects garment-shaped draws. Effects remain experimental.
+- **Diagnostics:** optional bounded F8 timing captures and an analyzer. These measure guest-swap cadence, not displayed FPS or GPU time. No measured performance gain or recommended performance preset is claimed.
 
-<p align="center">
-  <a href="https://youtu.be/ETXCOsip1Uo">
-    <img src="https://img.youtube.com/vi/ETXCOsip1Uo/maxresdefault.jpg" alt="Skate 3 Recomp native rendering showcase" width="420">
-  </a>
-</p>
+## Start playing on Windows
 
-## How Do I Play?
+For an existing HOPE installation:
 
-Notes:
+1. Open `Play HOPE.lnk`, or `HOPE/HOPE.exe`.
+2. Use **Game setup** to choose your own ISO or an extracted game folder containing `default.xex`.
+3. Let game installation/title-update setup finish, then choose **Play**.
+4. Set preferences in **Graphics** before launching. Use the in-game PC settings for supported live changes.
 
-- The Windows version is the most tested, followed by Linux, and then macOS.
-- On some hardware configurations, you may have a better experience running the Windows version through a translation layer like Proton rather than the native Linux build itself.
-- The macOS ARM build is experimental and more prone to issues.
+The launcher requires the **.NET 8 Windows Desktop runtime**. Source builds require the .NET 8 SDK. HOPE support files must remain beside `HOPE.exe`, `skate3.exe`, and the matching runtime DLL.
 
-### Windows
+| Input | Action |
+| --- | --- |
+| Controller Start/Menu | Original Skate 3 menu: Restart, Trick Book, map and replay |
+| Escape or RB + Start | Separate HOPE PC settings |
+| F1 | Alternate PC settings shortcut |
+| F8 | Start/save an optional timing capture |
 
-1. Download the latest release Skate3Recomp-Windows.zip from the releases page.
-2. Extract it anywhere you like, to a folder you control.
-3. Run skate3.exe.
-4. Click "Select ISO" to select your legally obtained copy of Skate 3.
-5. Wait for the installer to extract the game files.
-6. Click "Start Game".
+**Return to HOPE Launcher** closes the game session; finish saving first. It does not return to Skate 3's title screen. The PC overlay does not pause simulation.
 
-### Linux
+## Known issues and unfinished work
 
-1. Download the latest release Skate3Recomp-Linux.zip from the releases page.
-2. Extract it anywhere you like, to a folder you control.
-3. Run skate3.
-4. Click "Select ISO" to select your legally obtained copy of Skate 3.
-5. Wait for the installer to extract the game files.
-6. Click "Start Game".
+- The original intermittent blank difficulty screen after difficulty/camera selection remains open. The report involves a controller.
+- A true return to Skate 3's title screen and rebuilding its original menu remain unfinished. Some game-authored console wording remains.
+- The player reported the shirt detaching/disappearing during movement after particle integration. The 0.6.2 isolation hotfix is installed, but the movement retest has not been confirmed. See [hotfix details](launcher/Mods/CLOTHING-HOTFIX.md).
+- Particle effect textures/colors, larger or atlas-mapped effects, individual quad sorting and softened depth intersections remain incomplete. The dust fallback is not every original effect.
+- Crowd appearance, real controller navigation/reconnect, setup/save/load flows and long-session stability still need gameplay validation.
+- Path tracing is unavailable. No iMMERSE Pro source was integrated. No verified playable beta-content pack or skeleton-pedestrian replacement is offered.
 
-### macOS (ARM / Experimental)
+## Build and develop
 
-1. Download the latest release Skate3Recomp-macOS.zip from the releases page.
-2. Extract it anywhere you like, to a folder you control.
-3. Run the game by opening the skate3recomp app. Game files, saves and settings are kept in the folder containing the app, so keep it in a folder you control rather than in Downloads or Applications.
-4. The first time, right-click the app and choose Open, or approve it under System Settings > Privacy & Security, before macOS will allow it to run.
-5. Click "Select ISO" to select your legally obtained copy of Skate 3.
-6. Wait for the installer to extract the game files.
-7. Click "Start Game".
+See [Windows source build instructions](docs/BUILDING.md). Clone this repository with its pinned HOPE SDK submodule; the SDK includes local compatibility and PC-overlay changes that are not published in the original creator's repository.
 
-## Native Renderer
-
-Since v2.0.0 the game no longer relies on emulating the Xbox 360 GPU. A native renderer draws the game directly through Direct3D 12 or Vulkan, covering the entire game: gameplay, menus, HUD, loading screens, videos, and the photo, replay, skater, and park editors. It runs exact ports of the game's own material shading for the world, characters, vehicles, and water, so the image stays at close visual parity with the original console output while running far faster and more efficiently.
-
-- The native renderer is on by default. Settings > Video > Renderer switches between Native and Emulated live, and F5 hot-toggles between them at any time. If the native renderer ever hits an unrecoverable error, the game falls back to the emulated renderer and shows a corner indicator; F5 retries the native path.
-- On Windows, a single build ships both graphics API backends: Settings > Video > Graphics API selects DirectX 12 or Vulkan (applied with Apply & Restart; DirectX 12 is preferred by default). Linux uses Vulkan, and macOS uses Vulkan through MoltenVK.
-- Optional enhancements beyond the original game live under Settings > Video: MSAA up to 8x, enhanced real-time sun shadows with contact-hardening soft shadows, ambient occlusion, bloom, volumetric lighting, extended draw distance and world streaming, render scale up to 3x, and true ultrawide.
-
-Known issues:
-
-- Occasional texture and asset pop-in or brief flicker while streaming quickly around the map (also present in the emulated renderer)
-- Issues with rendering skater customization options in the edit skater mode (skin, hair, clothing etc.)
-- Hall of Meat currently not rendered properly (missing bone highlights etc.)
-- Skate parks and park editing currently have some general visual parity / rendering issues
-
-## Installing DLC
-
-To use DLC, you must provide package files from your own legally obtained Xbox 360 DLC.
-
-Create a `dlc` folder either beside the executable, inside the installed game folder,
-or in the user data folder. Place the DLC package files in that
-folder and start the game.
-
-## Saves and Portable Mode
-
-Saved games live in the user data folder by default (`%APPDATA%\skate3`, i.e.
-`AppData\Roaming\skate3`, on Windows). Two portable options are available:
-
-- Create a `saves` folder next to the executable and the game keeps saved games
-  there instead. The folder must exist before launch, and existing saves are not
-  migrated automatically - copy them over from the user data folder.
-- Create an empty `portable.txt` file next to the executable to keep all user
-  data in the executable's folder.
-
-## True Ultrawide
-
-The builds include an experimental true ultrawide mode: the native renderer draws the world at your display's full aspect ratio (21:9 and wider) with a matching wider field of view, while the HUD and menus stay centered and undistorted. Enable it via the Aspect Ratio setting or `skate3_ultrawide = true`. It requires the native renderer; with the emulated renderer the game presents in standard 16:9. Rendering more of the scene costs proportionally more GPU time.
-
-## Controls
-
-- Standard Xbox controls using an Xbox controller are the preferred and main input method.
-- PlayStation (DualShock/DualSense), Switch and most generic controllers are supported through the SDL controller backend: set Settings > Controls > Controller Backend to SDL and restart the game. Steam Input through XInput also works. On Linux and macOS the SDL backend is always used, so these controllers work out of the box.
-- Keyboard controls can be enabled in the game settings menu.
-- Press Escape on keyboard or (RB + Start) on the controller to open the game settings menu. The chord can be changed in Settings > Controls.
-
-### Keyboard Keybinds
-
-- Left stick: W/A/S/D
-- Right stick: mouse movement
-- A/B/X/Y: Space/C/E/F
-- LT/RT: RMB/LMB
-- LB/RB: Q/R
-- Left stick press: Shift
-- Right stick press: MMB
-- Back/Start: Tab/Return
-
-## Building from Source
-
-All platforms build with CMake 3.25+, Ninja, and Clang 18 or newer - ReXGlue
-requires Clang, so MSVC and Apple Clang are not supported. On Windows, install
-[LLVM for Windows](https://releases.llvm.org/) and Ninja.
-
-Clone with submodules:
-
-```sh
-git clone --recursive <repo-url> skate3recomp
-cd skate3recomp
-```
-
-If you already cloned without submodules:
-
-```sh
-git submodule sync --recursive
-git submodule update --init --recursive --jobs "$(nproc 2>/dev/null || echo 4)"
-```
-
-The build-time codegen needs an extracted game dump containing `default.xex` and
-`data/webkit/EAWebkit.xex`. Put that dump in `game/`, or pass a path with
-`SKATE3_GAME_DATA_ROOT`.
-
-The codegen should also be given the Skate 3 Title Update 3 package - the same
-`TU_12K2276_000000C000000.00000000000O3` file the in-game title update
-installer downloads. Place it in the repository root under its original name,
-or pass a path with `-DSKATE3_TITLE_UPDATE_PACKAGE=`. With the package
-present, the build extracts the update patches and recompiles the TU3-patched
-executables - the configuration used by release builds, whose runtime requires
-the title update to be staged before the game will boot. Without the package,
-codegen falls back to the unpatched retail image; that path is no longer
-regularly tested, and `generate-all` reporting unresolved calls on a clean
-retail dump is the usual symptom of building without the title update.
-
-Generate the recompiled source first:
-
-```sh
-cmake --preset relwithdebinfo -DSKATE3_GAME_DATA_ROOT="$PWD/game"
-cmake --build --preset relwithdebinfo --target generate-all --parallel
-```
-
-Then reconfigure so CMake sees the generated source lists and build:
-
-```sh
-cmake --preset relwithdebinfo -DSKATE3_GAME_DATA_ROOT="$PWD/game"
-cmake --build --preset relwithdebinfo --parallel
-```
-
-For release packaging, use the `release` preset on Windows, the
-`linux-release` preset on Linux, or the `macos-release` preset on macOS.
-
-The native renderer's HLSL sources live in `src/native/shaders` and are
-embedded into the build automatically. The matching Vulkan SPIR-V binaries are
-pre-compiled offline with DXC and committed under `src/native/shaders/spirv`,
-so building needs no shader tooling; the SPIR-V header only needs regenerating
-after editing the HLSL.
-
-## Ubuntu/Linux Build
-
-These instructions target Ubuntu 24.04 LTS on x86_64. Other distributions need
-the same toolchain shape: CMake, Ninja, Clang 20 or newer, Vulkan development
-headers, GTK 3 development headers, and SDL-compatible audio/input development
-packages.
-
-ReXGlue requires Clang. Clang 20 is recommended on Ubuntu because it matches the
-Linux toolchain used by the rexglue SDK CI and avoids Ubuntu 24.04's
-Clang 18/libstdc++ `std::expected` feature-test mismatch.
-
-Install LLVM's apt repository and dependencies:
-
-```sh
-sudo apt update
-sudo apt install -y wget gnupg lsb-release software-properties-common
-wget https://apt.llvm.org/llvm.sh
-chmod +x llvm.sh
-sudo ./llvm.sh 20
-sudo apt install -y \
-  git cmake ninja-build build-essential pkg-config p7zip-full \
-  clang-20 lld-20 \
-  libgtk-3-dev libx11-xcb-dev \
-  libvulkan-dev vulkan-tools mesa-vulkan-drivers \
-  libasound2-dev libpulse-dev libpipewire-0.3-dev libudev-dev
-```
-
-Optional packages improve controller/input and diagnostics coverage in SDL:
-
-```sh
-sudo apt install -y libusb-1.0-0-dev libunwind-dev libibus-1.0-dev liburing-dev
-```
-
-Initialize submodules as described above, then configure, generate,
-reconfigure, and build a development build:
-
-```sh
-cmake --preset linux-relwithdebinfo -DSKATE3_GAME_DATA_ROOT="$PWD/game"
-cmake --build --preset linux-relwithdebinfo --target generate-all --parallel
-cmake --preset linux-relwithdebinfo -DSKATE3_GAME_DATA_ROOT="$PWD/game"
-cmake --build --preset linux-relwithdebinfo --parallel
-```
-
-Build a Linux release:
-
-```sh
-cmake --preset linux-release -DSKATE3_GAME_DATA_ROOT="$PWD/game"
-cmake --build --preset linux-release --target generate-all --parallel
-cmake --preset linux-release -DSKATE3_GAME_DATA_ROOT="$PWD/game"
-cmake --build --preset linux-release --parallel
-```
-
-The release artifacts are:
-
-```text
-out/build/linux-release/skate3
-out/build/linux-release/librexruntime.so
-```
-
-## macOS Build (Apple Silicon)
-
-macOS builds use Homebrew LLVM - the `macos-*` presets expect the toolchain at
-`/opt/homebrew/opt/llvm`. Vulkan is provided by MoltenVK; the build copies the
-library next to the executable and writes a `MoltenVK_icd.json`, looking in
-`$VULKAN_SDK/lib`, `/opt/homebrew/lib`, and `/usr/local/lib`.
-
-```sh
-brew install llvm cmake ninja molten-vk
-```
-
-Configure, generate, reconfigure, and build a release:
-
-```sh
-cmake --preset macos-release -DSKATE3_GAME_DATA_ROOT="$PWD/game"
-cmake --build --preset macos-release --target generate-all --parallel
-cmake --preset macos-release -DSKATE3_GAME_DATA_ROOT="$PWD/game"
-cmake --build --preset macos-release --parallel
-```
-
-The release artifacts are `out/build/macos-release/skate3` and
-`librexruntime.dylib`, plus the MoltenVK library and ICD manifest beside them.
-
-## Running a Development Build
-
-Run the built executable directly with a game dump. On Linux:
-
-```sh
-LD_LIBRARY_PATH="$PWD/third_party/rexglue-sdk/out/linux-amd64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
-  ./out/build/linux-relwithdebinfo/skate3 --game_data_root="$PWD/game"
-```
-
-On Windows:
+The launcher can be built separately:
 
 ```powershell
-.\out\build\relwithdebinfo\skate3.exe --game_data_root="$PWD\game"
+dotnet build launcher/HOPE.Launcher.csproj -c Release -o out/hope-launcher
 ```
 
-Keyboard-to-controller emulation is off by default; enable it in
-Settings > Controls > Mouse & Keyboard Mode.
+Launcher fixtures and offscreen previews use disposable data and start no game. The latest installed launcher passed **109 fixture checks**; particle isolation passed **15 compiled checks**, and the texture generator passed **10 checks**. These checks do not establish live gameplay correctness. See [contributing and bug reports](CONTRIBUTING.md).
 
-Fullscreen is on by default. Pass `--fullscreen=false` to start windowed.
-On Windows, ultrawide displays are detected automatically in fullscreen. For an
-ultrawide window, pass matching `--window_width` and `--window_height` values;
-the native renderer then draws true widescreen frames at that aspect.
+## Files and recovery
 
-## rexglue Fork
+The cleaned local installation uses `HOPE/docs` for guides/build records and `Archive/Update packages` / `Archive/Preview builds` for earlier packages. Older builds and their save copies were preserved. `Archive/folder-moves.json` records relocations. Program rollback copies stay in `HOPE/updates`.
 
-`third_party/rexglue-sdk` is pinned as a Git submodule to the
-`skate3-sdk-clean` branch of the Skate-specific rexglue fork. Clone
-recursively or run:
-
-```sh
-git submodule sync --recursive
-git submodule update --init --recursive --jobs "$(nproc 2>/dev/null || echo 4)"
-```
-
-The fork is based on rexglue's 0.8.0 release line and contains the Skate 3
-runtime, codegen, input, timing, the Direct3D 12 and Vulkan backends used by
-the native renderer, the settings overlay, and the Linux and macOS fixes
-needed by this project.
+Close both launcher and game before applying an update. The updater verifies program hashes and backs up existing program files; it does not reset career progress or settings. When running an archived installer, pass the current HOPE folder explicitly as `-Target`.
 
 ## Credits
 
-- [rexglue SDK](https://github.com/rexglue/rexglue-sdk), the recompilation SDK
-  used by this project.
-- [Xenia](https://github.com/xenia-project/xenia), whose Xbox 360 research and
-  tooling have helped the broader recompilation ecosystem.
+- **[mchughalex / Skate3Recomp](https://github.com/mchughalex/skate3recomp):** original recompilation, native renderer and project foundation.
+- **[ReXGlue SDK](https://github.com/rexglue/rexglue-sdk)** and the [Skate-specific SDK fork](https://github.com/mchughalex/rexglue-skate3).
+- **[Xenia](https://github.com/xenia-project/xenia):** Xbox 360 research and tooling.
+- **EA Black Box / Electronic Arts:** original Skate 3 game.
+
+HOPE is an unofficial community update. Existing source notices and original creator credits remain intact. The [original upstream documentation](docs/UPSTREAM.md) is preserved separately.

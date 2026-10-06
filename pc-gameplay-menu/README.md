@@ -1,5 +1,7 @@
 # HOPE controls: original Skate 3 menu restored
 
+Current build/status: [HOPE current status](../docs/CURRENT-STATUS.md). Installed checkpoint sections below are historical; later packages now live in Archive and guides in HOPE/docs.
+
 HOPE = Hills, Ollies, Pavement, Expression. Based on Skate3Recomp by mchughalex: https://github.com/mchughalex/skate3recomp.
 
 ## Installed behavior

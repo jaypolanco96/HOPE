@@ -1,5 +1,7 @@
 # Phase 4 — performance measurement and validation
 
+Current build/status: [HOPE current status](../docs/CURRENT-STATUS.md). Installed checkpoint sections below are historical; later packages now live in Archive and guides in HOPE/docs.
+
 Phase 4 has started. This first checkpoint supplies bounded frame-pacing captures and reproducible analysis. It does not claim an FPS improvement or that Phase 4 is complete. HOPE is Hills, Ollies, Pavement, Expression, based on Skate3Recomp by mchughalex (https://github.com/mchughalex/skate3recomp). Supply your own Skate 3 Xbox 360 ISO; no game download links are provided.
 
 ## Capture during play

@@ -1,0 +1,30 @@
+name: Bug report
+description: Report a HOPE launcher or game problem.
+title: "[Bug] "
+body:
+  - type: input
+    id: build
+    attributes:
+      label: HOPE and game versions
+      placeholder: Launcher 0.6.3; game 2.0.0.37-dev.g66ac4f3
+    validations:
+      required: true
+  - type: input
+    id: setup
+    attributes:
+      label: Setup
+      description: Windows version, graphics renderer/backend, and controller or keyboard.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps and result
+      description: What you did, what happened, and what you expected. Include camera/difficulty choices or shirt/particle settings when relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Logs or screenshots
+      description: Optional relevant evidence. Remove personal paths and account details; do not upload game files or saves.

@@ -10,7 +10,7 @@ Open `C:\GOG Games\Skate3Recomp-Windows\Play HOPE.lnk` or `HOPE\HOPE.exe` in Fil
 
 Launcher 0.6.3 embeds the original HOPE H/skateboard icon in the executable and WPF window. Editable vector art, PNG, multi-resolution ICO and a reproducible raster generator are in Branding. Older local builds are preserved under Archive/Update packages and Archive/Preview builds; launcher guides/build records are in HOPE/docs. The folder-moves.json archive ledger records the relocation. Active saves, settings, game data and rollback copies were preserved.
 
-Home offers Play, Graphics, My saves, Game setup, and Credits. Use a mouse, Tab/arrow keys and Enter, or an XInput controller. Controller D-pad/stick up/down moves focus, left/right changes selections, A activates, and B cancels save removal or returns Home. Escape also returns Home or cancels confirmation. Native controller navigation needs an actual controller test; PlayStation/generic controller support beyond XInput is not implemented in this launcher.
+Home offers Play, Graphics, My saves, Mods, Game setup, Help & recovery, and Credits. Use a mouse, Tab/arrow keys and Enter, or an XInput controller. Controller D-pad/stick up/down moves focus, left/right changes selections, A activates, and B cancels save removal or returns Home. Escape also returns Home or cancels confirmation. Native controller navigation needs an actual controller test; PlayStation/generic controller support beyond XInput is not implemented in this launcher.
 
 ## Your game, your ISO
 
@@ -42,10 +42,12 @@ Build with .NET 8 SDK on Windows:
 dotnet build launcher/HOPE.Launcher.csproj -c Release -o out/hope-launcher
 ```
 
-The runnable launcher requires the .NET 8 Windows Desktop runtime, already available on this development machine. Copy all output files into the HOPE game bundle. Run fixture checks using `HOPE.exe --self-test --test-report <report path>`. Offline layout export uses `--root <bundle path> --render <PNG path> --page Home|Graphics|Saves|Setup|Credits --size 1360x850`; it shows no native window and starts no game. Fixture checks use disposable data, never actual player saves.
+The runnable launcher requires the .NET 8 Windows Desktop runtime, already available on this development machine. Copy all output files into the HOPE game bundle. Run fixture checks using `HOPE.exe --self-test --test-report <report path>`. Offline layout export uses `--root <bundle path> --render <PNG path> --page Home|Graphics|Saves|Mods|Setup|Help|Credits --size 1360x850`; it shows no native window and starts no game. Fixture checks use disposable data, never actual player saves.
 
 Phase 3 adds Help & recovery, reversible selected-career settings reset/restore, fullscreen/VSync/FPS preferences, active-input prompts and controller reconnect protection. See ../phase3/README.md. Live game launch/ISO installation, hardware controls, difficulty/camera persistence and the original intermittent difficulty-screen defect still require runtime validation. Measured presets await Phase 4.
 
 PC controls correction: Start opens the original Skate 3 menu. Escape or RB + Start opens HOPE settings. Return to HOPE Launcher closes the session; actual Skate 3 title-screen return remains unimplemented. See ../pc-gameplay-menu/README.md and ACTUAL-MENU-INVESTIGATION.md.
 
 Phase 4 starts with optional F8 timing captures and Open performance captures in Help. Captures are bounded and do not run in normal play until enabled. Python 3 is needed only for the separate analysis script, not for playing/capturing. See ../phase4/README.md for instructions and the guest-cadence measurement limits.
+
+Current graphics, mods and known issues are summarized in [current status](../docs/CURRENT-STATUS.md). The particle/clothing hotfix still needs movement retesting. See [changelog](../CHANGELOG.md).
