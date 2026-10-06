@@ -16,7 +16,7 @@ notarized. See [package scope](RELEASES.md).
 | --- | --- | --- |
 | Launcher | PC navigation, graphics, careers, saves, mods, help, icon | Real controller/hardware and install/recovery flows |
 | Original menu | Start/Menu preserved; Escape / RB+Start opens HOPE settings | Actual Skate title return and original-menu extensions |
-| Difficulty | Diagnostic/reliability work and isolated careers | Intermittent blank screen after difficulty/camera choices |
+| Difficulty | Both renderer fallback retests failed. A default-enabled welcome-wizard bypass is installed in the HOPE template and existing career; it follows the original boot completion branch and retains initialized settings | Live controller test through subsequent career setup and gameplay |
 | Graphics | Existing native effects exposed in launcher/overlay | Appearance, correctness and performance on real hardware |
 | Particles/clothing | Separate particle pipelines; original character shaders; corrected cloth mode, recovery age and decode consistency | New build's shirt movement retest; original effect materials |
 | Cosmetic mods | No Intro, Wide Streets, three crowd styles; settings manifest importer | Crowd appearance and shader/model edge cases |

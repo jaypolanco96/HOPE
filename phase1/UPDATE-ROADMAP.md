@@ -1,6 +1,6 @@
 # HOPE: four-phase update roadmap
 
-Updated October 5, 2026. Phase 4 measurement work and subsequent graphics/mod/particle/branding updates are implemented. All earlier live completion gates remain open. Launcher 0.6.3 and game 2.0.0.41-dev.ge7ca86e are installed; see [current status](../docs/CURRENT-STATUS.md). Difficulty/camera and true Skate title return remain unfinished. The shirt still detached on the previous build with particles disabled; the new clothing state correction awaits movement retest.
+Updated October 6, 2026. Both new-career renderer fallback retests failed. At the player's request, a welcome-wizard bypass is built and installed into the HOPE template and existing career, with verified binary hashes and rollback copies. The bypass retains initialized game settings and uses the original boot completion branch. Live career/gameplay verification remains open. See [current status](../docs/CURRENT-STATUS.md).
 
 ## Starting evidence
 

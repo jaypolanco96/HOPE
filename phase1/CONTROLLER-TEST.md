@@ -1,6 +1,10 @@
 # Phase 1 controller test
 
-The diagnostic build records menu transitions. It does not yet fix the blank difficulty screen. These portable sessions keep test saves separate from your normal save.
+Both renderer fallback retests failed. The installed welcome-wizard bypass is the current test target; live success remains unverified. The diagnostic sessions below are historical comparison instructions.
+
+## Renderer fallback history
+
+The October 6 renderer changes cover frontend states 10 and 67, but the player still encountered the blank panel with the fallback active. These changes alone do not resolve the blocker. Their rollback copies remain under `HOPE/updates/hope-difficulty-camera-20261006-175728`.
 
 ## First run: Native rendering
 
@@ -19,3 +23,7 @@ Open `local-phase1/sessions/20261005-105423-Fresh-Emulated-Diagnostic-Controller
 Tell the developer which session you ran, your choices, the outcome, and what F5 did if the screen went blank. The logs remain locally available for investigation; no upload is needed when working in this workspace.
 
 Do not overwrite the installed executable with this diagnostic build. Fresh-profile results do not establish whether an existing career save triggers the issue. More tests will follow once the first pair is analyzed.
+
+## Current welcome-wizard bypass
+
+The player requested removing the blocked step after both renderer retests failed. The installed build now skips the initial difficulty/camera welcome wizard using the original boot handler's completion branch. It retains the game's initialized settings. After a normal restart through HOPE, verify the welcome panel no longer blocks startup, subsequent career setup appears, and gameplay can be reached. Verify difficulty/camera can be changed later in the game settings. Existing careers, saves, and mods must remain intact. Check the log for `HOPE: bypassing first-career welcome setup; retaining game settings`. Live success is not yet established.

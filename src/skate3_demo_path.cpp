@@ -50,6 +50,9 @@ REXCVAR_DEFINE_BOOL(skate3_frontend_movies_auto_skip, false, "Skate 3",
 REXCVAR_DEFINE_BOOL(skate3_intro_movie_skip, true, "Skate 3",
                     "Skip the frontend intro movie when A or Start is pressed "
                     "(the default keyboard bindings make that Space and Enter)");
+REXCVAR_DEFINE_BOOL(skate3_skip_welcome_setup, true, "Skate 3",
+                    "Bypass the broken first-career difficulty/camera wizard; "
+                    "retain initialized game settings (change them in Game Settings)");
 
 namespace skate3::demo_path {
 namespace {
@@ -185,6 +188,19 @@ extern "C" REX_FUNC(Skate3DemoPath_SetFrontEndStateHook) {
         "elapsed_us={}",
         sequence, state_id, manager, elapsed_us);
   }
+}
+
+// BootFlow's welcome handler enters FE state 10 on event 0, then on event 1
+// waits for that panel to close before advancing to 0x82704DD8. Use the
+// original completion branch on entry instead of opening the broken panel.
+// This keeps the game's normal transition/cleanup and initialized settings;
+// no save flags, profile data, or frontend stack records are patched.
+extern "C" REX_FUNC(HopeWelcomeSetupHook) {
+  if (REXCVAR_GET(skate3_skip_welcome_setup) && ctx.r4.u32 == 0) {
+    REXLOG_INFO("HOPE: bypassing first-career welcome setup; retaining game settings");
+    ctx.r4.u64 = 1;
+  }
+  sub_82704D30(ctx, base);
 }
 
 extern "C" REX_FUNC(Skate3DemoPath_LanguageSelectStateHook) {
@@ -406,7 +422,13 @@ void StartGameplayInputWorkerIfNeeded() {
 }  // namespace
 
 void InstallHooks(rex::runtime::FunctionDispatcher* dispatcher) {
-  if (!dispatcher || !ProbeEnabled()) {
+  if (!dispatcher) {
+    return;
+  }
+
+  // The setup bypass is a product fix, independent of diagnostic automation.
+  dispatcher->SetFunction(0x82704D30, &HopeWelcomeSetupHook);
+  if (!ProbeEnabled()) {
     return;
   }
 

@@ -5146,10 +5146,38 @@ bool g_loading_hold = false;
 // loading-screen pipeline build / prewarm commit while in a load, whether
 // the loading pixels themselves render emulated (yield) or natively
 // (g_loading_native_frame).
+// The reported difficulty/camera blocker ends at [0,10] in career logs;
+// the later create-a-skater flow uses [0,67,15]. Keep both on the emulated
+// frontend: the native scene/2D replay can leave the difficulty/camera
+// option panel empty during new-career setup.
+bool CareerSetupScreenActive(uint8_t* base) {
+  if (base == nullptr) {
+    return false;
+  }
+  constexpr uint32_t kFrontEndManagerPtr = 0x830CFE14;
+  uint32_t mgr = 0, beg = 0, end = 0;
+  if (!GuestTryLoadU32(base, kFrontEndManagerPtr, &mgr) || mgr == 0 ||
+      !GuestTryLoadU32(base, mgr + 0x210, &beg) ||
+      !GuestTryLoadU32(base, mgr + 0x214, &end) || beg > end ||
+      end - beg > 20 * 16) {
+    return false;
+  }
+  const uint32_t n = (end - beg) / 20;
+  for (uint32_t i = 0; i < n; ++i) {
+    uint32_t state = 0;
+    if (GuestTryLoadU32(base, beg + i * 20, &state) &&
+        (state == 10 || state == 67)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 bool YieldForMenus(const NativeGuestOutputRenderContext& context) {
   static bool s_in_loading = false;
   static bool s_seen_gameplay = false;
   static bool s_pause_native = false;
+  static bool s_career_setup = false;
   const bool in_menus = rex::kernel::guest_presence::GameplayContextValue() == 0;
   // Render-thread mirror for the 2D texture resolver: menu screens shorten
   // the content-liveness recheck cadence (see resolve_2d_texture) so
@@ -5158,6 +5186,13 @@ bool YieldForMenus(const NativeGuestOutputRenderContext& context) {
   g_in_menus_frame.store(in_menus, std::memory_order_relaxed);
   if (!in_menus) {
     s_seen_gameplay = true;
+  }
+  const bool career_setup =
+      in_menus && CareerSetupScreenActive(g_guest_base.load(std::memory_order_relaxed));
+  if (career_setup != s_career_setup) {
+    s_career_setup = career_setup;
+    REXLOG_INFO("native-scene: new-career setup {} - emulated frontend",
+                career_setup ? "active" : "closed");
   }
   // In-game pause menu: the presence context reads 0, but the world keeps
   // resubmitting perspective scenes behind the menu (loading screens and the
@@ -5180,6 +5215,13 @@ bool YieldForMenus(const NativeGuestOutputRenderContext& context) {
                                .count();
     pause_native = last_ns >= 0 && now_ns - last_ns < 300'000'000;
   }
+  // The first-career wizard is part of the boot frontend, and its difficulty
+  // and camera choices must use the game's complete emulated UI pipeline.
+  // The native scene/2D replay can leave its option panel empty, so always
+  // yield this wizard to the emulated output, regardless of boot_native.
+  if (career_setup) {
+    pause_native = false;
+  }
   if (pause_native != s_pause_native) {
     s_pause_native = pause_native;
     if (pause_native) {
@@ -5193,8 +5235,9 @@ bool YieldForMenus(const NativeGuestOutputRenderContext& context) {
       REXLOG_INFO(
           "native-scene: leaving native pause ({}; 2d stats at exit: "
           "draws_2d={} other={} dropped={})",
-          in_menus ? "scene publishes went stale - loading/frontend"
-                   : "gameplay resumed",
+          career_setup ? "new-career setup - yielding to emulated output"
+                       : in_menus ? "scene publishes went stale - loading/frontend"
+                                  : "gameplay resumed",
           g_draws_2d.load(std::memory_order_relaxed),
           g_draws_2d_other.load(std::memory_order_relaxed),
           g_draws_2d_dropped.load(std::memory_order_relaxed));
@@ -5314,7 +5357,8 @@ bool YieldForMenus(const NativeGuestOutputRenderContext& context) {
   // housekeeping below runs for the loading STATE either way; only the
   // yield decision changes.
   const bool loading_native =
-      in_loading && (s_seen_gameplay || boot_native) &&
+      // A setup fallback must also bypass the native loading/2D path.
+      !career_setup && in_loading && (s_seen_gameplay || boot_native) &&
       REXCVAR_GET(skate3_native_render_scene_loading_native);
   g_loading_native_frame = loading_native;
   if (in_loading != s_in_loading) {
