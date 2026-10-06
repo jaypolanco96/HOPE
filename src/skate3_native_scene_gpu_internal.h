@@ -477,6 +477,7 @@ struct RendererState {
   // environment.transparent sub-pass: straight alpha blend, depth test on,
   // z-write OFF; items drawn back-to-front after all opaque items.
   nrhi::Pipeline* pso_transparent = nullptr;
+  nrhi::Pipeline* pso_particle = nullptr;
   nrhi::Pipeline* pso_particle_nodepth = nullptr;
   // Entity-fade variant of the transparent PSO: same straight alpha blend
   // but z-write ON. A fading character/vehicle is a solid object at partial

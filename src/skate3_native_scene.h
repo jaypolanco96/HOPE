@@ -268,6 +268,8 @@ struct DrawItem {
   // float3 verts): the renderer synthesizes quad->triangle indices instead
   // of reading a guest index buffer.
   bool cloth_quads;
+  // Proven small full-UV sprite batch; topology alone never selects shading.
+  bool hope_particle = false;
   // Park-editor / object-mover selection: the game re-draws the selected
   // object after the sky (twice, stencil-marking it) and a postfx stencil
   // edge-detect adds the blue outline. Items matched to those re-draws by

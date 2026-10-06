@@ -6,6 +6,7 @@
 
 #include "skate3_native_scene.h"
 #include "hope_crowd_mods.h"
+#include "hope_particle_draw.h"
 
 #include "generated/skate3_init.h"
 
@@ -4406,9 +4407,34 @@ uint32_t CaptureClothDraw(uint8_t* base, uint32_t r4, uint32_t r5, uint32_t r6,
   if (quads == 0) {
     return 0;
   }
-  const uint32_t start = 0;
-
-  const uint32_t garment_key = vb_obj ^ (start * 2654435761u);
+  if (!GuestRangeReadable(base, addr, verts*kStride)) return 0;
+  // Both shader trackers are inspected: their hook labels can be swapped.
+  for (const uint32_t obj : {g_cur_ps_obj.load(std::memory_order_relaxed),
+                             g_cur_vs_obj.load(std::memory_order_relaxed)}) {
+    if (obj < 0x10000 || obj > 0xFFFFFF00u) continue;
+    char path[256]{};
+    GuestTryReadString(base, obj+0x54, path, sizeof(path));
+    for (char& c:path) if (c>='A' && c<='Z') c=char(c-'A'+'a');
+    if (hope::IsGarmentShader(path)) return 0;
+  }
+  const auto read_sprite = [&](uint32_t vertex) {
+    hope::SpriteVertex v{};
+    for (uint32_t axis=0;axis<3;++axis)
+      v.p[axis]=LoadGuestF32(base,addr+vertex*kStride+axis*4);
+    for (uint32_t axis=0;axis<2;++axis)
+      v.uv[axis]=LoadGuestF32(base,addr+vertex*kStride+16+axis*4);
+    return v;
+  };
+  if (!hope::IsSpriteBatch(verts, read_sprite)) return 0;
+  // Synthetic particle cache keys live below valid guest pointer addresses.
+  // A dynamic VB object is not a guest mesh identity and may be recycled.
+  static std::unordered_map<uint32_t,uint32_t> particle_keys;
+  auto key=particle_keys.find(vb_obj);
+  if (key==particle_keys.end()) {
+    if (particle_keys.size()>=65535) return 0;
+    key=particle_keys.emplace(vb_obj,uint32_t(particle_keys.size()+1)).first;
+  }
+  const uint32_t garment_key = key->second;
   DrawItem item{};
   item.mesh = garment_key;
   item.vb_obj = vb_obj;
@@ -4431,6 +4457,7 @@ uint32_t CaptureClothDraw(uint8_t* base, uint32_t r4, uint32_t r5, uint32_t r6,
   item.skinned = false;
   item.pending = false;
   item.cloth_quads = true;
+  item.hope_particle = true;
   item.transparent = true;
   std::memset(item.world, 0, sizeof(item.world));
   item.world[0] = item.world[5] = item.world[10] = item.world[15] = 1.0f;

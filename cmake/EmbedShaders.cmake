@@ -7,6 +7,7 @@
 
 set(SHADER_VARS
     kShaderSource
+    kParticleShaderSource
     kShadowBlurSource
     kResolveShaderSource
     kBlurShaderSource
@@ -20,6 +21,7 @@ set(SHADER_VARS
 )
 set(SHADER_FILES
     scene.hlsl
+    particle.hlsl
     shadow_blur.hlsl
     resolve.hlsl
     blur.hlsl

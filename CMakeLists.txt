@@ -315,6 +315,7 @@ set(SKATE3_NATIVE_SHADER_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/native/shaders/photo_fx.hlsl
     ${CMAKE_CURRENT_SOURCE_DIR}/src/native/shaders/ssao.hlsl
     ${CMAKE_CURRENT_SOURCE_DIR}/src/native/shaders/hdr.hlsl
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/native/shaders/particle.hlsl
     ${CMAKE_CURRENT_SOURCE_DIR}/src/native/shaders/ssr.hlsl
 )
 # Shared .hlsli headers, inlined into the embedded sources by
@@ -421,6 +422,9 @@ if(WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     add_executable(skate3_pc_menu_input_test EXCLUDE_FROM_ALL pc-gameplay-menu/input_routing_test.cpp)
     target_compile_features(skate3_pc_menu_input_test PRIVATE cxx_std_23)
     target_include_directories(skate3_pc_menu_input_test PRIVATE third_party/rexglue-sdk/include)
+    add_executable(hope_particle_draw_test EXCLUDE_FROM_ALL phase4/tests/particle_draw_test.cpp)
+    target_compile_features(hope_particle_draw_test PRIVATE cxx_std_23)
+    target_include_directories(hope_particle_draw_test PRIVATE src)
     add_executable(hope_particle_texture_test EXCLUDE_FROM_ALL phase4/tests/particle_texture_test.cpp)
     target_compile_features(hope_particle_texture_test PRIVATE cxx_std_23)
     target_include_directories(hope_particle_texture_test PRIVATE src)

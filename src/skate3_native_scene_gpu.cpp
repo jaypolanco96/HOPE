@@ -48,6 +48,7 @@
 // sources with DXC): the Vulkan RHI backend consumes these blobs; the D3D12
 // backend runtime-compiles the embedded HLSL as before.
 #include "native/shaders/spirv/skate3_native_shaders_spirv.h"
+#include "native/shaders/spirv/hope_particle_spirv.h"
 
 #if (defined(REX_HAS_D3D12) && REX_HAS_D3D12) || (defined(REX_HAS_VULKAN) && REX_HAS_VULKAN)
 #include <rex/graphics/native_rhi.h>
@@ -2703,6 +2704,13 @@ nrhi::ShaderDesc MakeShaderDesc(nrhi::ShaderStage stage, const char* file,
   sd.hlsl_source = hlsl_source;
   sd.entry_point = entry;
   sd.macros = macros;
+  if (std::strcmp(file, "particle.hlsl") == 0 && std::strcmp(entry, "ps_main") == 0) {
+    const bool hdr = std::strcmp(variant, "HDR=1") == 0;
+    sd.spirv = hdr ? hope::particle_spirv::hdr : hope::particle_spirv::gamma;
+    sd.spirv_size_bytes = hdr ? sizeof(hope::particle_spirv::hdr)
+                              : sizeof(hope::particle_spirv::gamma);
+    return sd;
+  }
   for (size_t i = 0; i < skate3::native_spirv::kNativeSpirvBlobCount; ++i) {
     const auto& b = skate3::native_spirv::kNativeSpirvBlobs[i];
     if (std::strcmp(b.file, file) == 0 && std::strcmp(b.entry, entry) == 0 &&
@@ -2807,7 +2815,7 @@ bool EnsureScenePsoFamily(const NativeGuestOutputRenderContext& context) {
   for (nrhi::Pipeline** p :
        {&g_r.pso, &g_r.pso_cullback, &g_r.pso_transparent, &g_r.pso_fade,
         &g_r.pso_hair_a, &g_r.pso_hair_b, &g_r.pso_nodepth,
-        &g_r.pso_outline_mask, &g_r.pso_particle_nodepth}) {
+        &g_r.pso_outline_mask, &g_r.pso_particle, &g_r.pso_particle_nodepth}) {
     if (*p != nullptr) {
       device->DestroyDeferred(*p);
       *p = nullptr;
@@ -2886,10 +2894,21 @@ bool EnsureScenePsoFamily(const NativeGuestOutputRenderContext& context) {
   pso.blend.dst_alpha = nrhi::BlendFactor::kInvSrcAlpha;
   pso.blend.op_alpha = nrhi::BlendOp::kAdd;
   g_r.pso_transparent = device->CreateGraphicsPipeline(pso);
-  // Particle coverage must still alpha-blend when scene depth is disabled.
-  pso.depth.test_enable = false;
-  pso.dsv_format = nrhi::Format::kUnknown;
-  g_r.pso_particle_nodepth = device->CreateGraphicsPipeline(pso);
+  // Separate shader and pipelines: particle changes cannot alter clothing.
+  nrhi::ShaderMacro particle_defs[] = {{"HDR", "1"}, {nullptr, nullptr}};
+  auto* particle_ps = device->CreateShader(MakeShaderDesc(
+      nrhi::ShaderStage::kPixel, "particle.hlsl", kParticleShaderSource,
+      "ps_main", g_r.hdr_active ? particle_defs : nullptr,
+      g_r.hdr_active ? "HDR=1" : ""));
+  if (particle_ps) {
+    pso.ps = particle_ps;
+    g_r.pso_particle = device->CreateGraphicsPipeline(pso);
+    pso.depth.test_enable = false;
+    pso.dsv_format = nrhi::Format::kUnknown;
+    g_r.pso_particle_nodepth = device->CreateGraphicsPipeline(pso);
+    device->DestroyDeferred(particle_ps);
+  }
+  pso.ps = ps;
   pso.depth.test_enable = true;
   pso.dsv_format = nrhi::Format::kD32_FLOAT;
   // Entity-fade variant: z-write ON (see RendererState::pso_fade). Drawn
@@ -2931,7 +2950,7 @@ bool EnsureScenePsoFamily(const NativeGuestOutputRenderContext& context) {
   device->DestroyDeferred(vs);
   device->DestroyDeferred(ps);
   if (g_r.pso == nullptr || g_r.pso_nodepth == nullptr ||
-      g_r.pso_transparent == nullptr || g_r.pso_particle_nodepth == nullptr) {
+      g_r.pso_transparent == nullptr) {
     REXLOG_ERROR("native-scene: PSO creation failed");
     g_r.failed = true;
     return false;
@@ -9506,12 +9525,11 @@ bool RenderScene(const NativeGuestOutputRenderContext& context, void* /*user_dat
     }
     if (item.hope_neon_crowd && debug_mode == 0 &&
         g_r.showcase_rows[0] == 0.0f && g_r.showcase_rows[1] == 0.0f) hope::NeonTint(constants);
-    if (item.cloth_quads && debug_mode == 0) {
+    if (item.hope_particle && debug_mode == 0) {
       // Dedicated straight-alpha sprite shading; bypass surface alpha-test,
       // skinning, water and environment material conventions.
       constants[32] = constants[33] = constants[34] = 0.0f;
       constants[35] = -1.0f;
-      constants[39] = -60.0f;
       diffuse = &g_r.particle_dust;
     }
     cmd->SetRootConstants(0, 52, constants, 0);
@@ -10110,10 +10128,13 @@ bool RenderScene(const NativeGuestOutputRenderContext& context, void* /*user_dat
     cmd->SetPipeline(use_depth ? g_r.pso_transparent : g_r.pso_nodepth);
     nrhi::Pipeline* blend_bound = use_depth ? g_r.pso_transparent : g_r.pso_nodepth;
     for (const DrawItem* item : transparent_items) {
-      if (item->cloth_quads && !use_depth) {
-        cmd->SetPipeline(g_r.pso_particle_nodepth);
-        timed_draw(*item);
-        cmd->SetPipeline(blend_bound);
+      if (item->hope_particle) {
+        auto* particle_pipeline = use_depth ? g_r.pso_particle : g_r.pso_particle_nodepth;
+        if (particle_pipeline) {
+          cmd->SetPipeline(particle_pipeline);
+          timed_draw(*item);
+          cmd->SetPipeline(blend_bound);
+        }
         continue;
       }
       // Mid-fade entity pieces: alpha blend with z-write ON (see pso_fade).
