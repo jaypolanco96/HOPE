@@ -371,6 +371,11 @@ endif()
 target_link_libraries(skate3 PRIVATE rex::runtime)
 
 if(WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    add_executable(hope_bit_stream_bounds_test EXCLUDE_FROM_ALL
+        phase1/tests/bit_stream_bounds_test.cpp
+        third_party/rexglue-sdk/src/core/bit_stream.cpp)
+    target_compile_features(hope_bit_stream_bounds_test PRIVATE cxx_std_23)
+    target_include_directories(hope_bit_stream_bounds_test PRIVATE third_party/rexglue-sdk/include)
     add_executable(skate3_pc_graphics_settings_test EXCLUDE_FROM_ALL
         phase1/tests/pc_graphics_settings_test.cpp)
     target_compile_features(skate3_pc_graphics_settings_test PRIVATE cxx_std_23)

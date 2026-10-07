@@ -68,3 +68,10 @@ The latest inspected game log (`skate3_022.log`) contains recurring XMA input
 offset diagnostics and a heap-release diagnostic during shutdown. These are
 recorded for native investigation; no audio or memory fix is claimed from this
 launcher update, and no live playback regression test was performed.
+
+Subsequent October 6 gameplay testing reproduced an audio bit-stream assertion.
+The native correction validates XMA offsets before setting the cursor and
+bounds packet-tail reads; 6,932 guarded reference reads passed. A separate
+invalid guest-function call remains unresolved and has additional caller
+diagnostics. See [audio crash investigation](AUDIO-BOUNDS-FIX.md). Live soak
+testing and updated release packages remain outstanding.
