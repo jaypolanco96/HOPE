@@ -39,7 +39,7 @@ public static class AdvancedGraphics
     ];
     public static List<GraphicsOption> Native() => [
         Flag("skate3_native_render_scene_hdr","HDR lighting pipeline","Internal high precision lighting for bloom, reflections and atmosphere. This does not enable HDR monitor output.",true),
-        Flag("skate3_native_render_scene_ssr","Screen-space reflections (experimental)","Reflects visible scenery on glass and water. Requires HDR lighting. May show noise or smearing.",false),
+        Flag("skate3_native_render_scene_ssr","Screen-space reflections","Reflects visible scenery on glass and water. Requires HDR lighting. May show noise or smearing.",false),
         Range("skate3_native_render_scene_ssr_steps","Reflection quality","Ray steps per pixel; more steps cost more GPU time.",48,8,64,1),
         Range("skate3_native_render_scene_ssr_intensity","Reflection strength","0 removes the screen-space contribution; requires reflections and HDR lighting.",1,0,2,.05),
         Flag("skate3_native_render_scene_shadows","Dynamic shadows","Live shadows from characters and movable objects.",true),
@@ -53,6 +53,6 @@ public static class AdvancedGraphics
         Range("skate3_native_render_scene_shafts_steps","Sun-shaft quality","Volumetric ray steps; more steps cost more GPU time. Requires shadows, shafts and HDR lighting.",64,8,64,1),
         Flag("skate3_native_render_scene_tex_mips","Texture mipmaps","Filters distant textures to reduce shimmering.",true),
         Flag("skate3_native_render_scene_decals","Graffiti and painted decals","Displays authored surface artwork.",true),
-        Flag("skate3_native_render_scene_quadlists","Particle draws (experimental)","Soft dust sprites with transparent edges. Experimental: original game effect textures and colors are not yet mapped. Off by default.",false)
+        Flag("skate3_native_render_scene_quadlists","Particle draws","Soft dust sprites with transparent edges. Uses HOPE dust sprites rather than the original game effect textures. Off by default.",false)
     ];
 }

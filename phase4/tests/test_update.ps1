@@ -48,11 +48,23 @@ try {
     Require ((Get-Content -LiteralPath (Join-Path $target 'settings.toml')) -eq 'keep-settings') 'Settings changed'
     Require ((Get-Content -LiteralPath (Join-Path $career 'SKATER.P')) -eq 'keep-save') 'Career save changed'
     $map = Get-ChildItem -LiteralPath (Join-Path $target 'updates') -Filter 'restore-map.json' -Recurse
-    $entries = @(Get-Content -LiteralPath $map.FullName -Raw | ConvertFrom-Json)
+    $entries = Get-Content -LiteralPath $map.FullName -Raw | ConvertFrom-Json
     Require ($entries.Count -eq 9) 'Backup coverage mismatch'
     foreach ($entry in $entries) {
         Require ((Get-FileHash -LiteralPath $entry.backup).Hash -eq $entry.originalHash) 'Backup checksum mismatch'
     }
+    # Release mode also updates the bundled runtime and language resources.
+    New-Item -ItemType Directory -Path (Join-Path $payload 'fr') | Out-Null
+    Set-Content -LiteralPath (Join-Path $payload 'coreclr.dll') 'new-runtime'
+    Set-Content -LiteralPath (Join-Path $payload 'fr/System.Windows.resources.dll') 'new-locale'
+    $releaseFiles = @($files) + @(@{name='coreclr.dll';sha256=(Get-FileHash -LiteralPath (Join-Path $payload 'coreclr.dll')).Hash}, @{name='fr/System.Windows.resources.dll';sha256=(Get-FileHash -LiteralPath (Join-Path $payload 'fr/System.Windows.resources.dll')).Hash})
+    @{files=$releaseFiles} | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $root 'payload.json')
+    & $updater -Target $target -ReleasePackage
+    Require ((Get-Content -LiteralPath (Join-Path $target 'coreclr.dll')) -eq 'new-runtime') 'Release runtime not installed'
+    Require ((Get-Content -LiteralPath (Join-Path $target 'fr/System.Windows.resources.dll')) -eq 'new-locale') 'Release locale not installed'
+    Require ((Get-Content -LiteralPath (Join-Path $target 'settings.toml')) -eq 'keep-settings') 'Release changed settings'
+    Require ((Get-Content -LiteralPath (Join-Path $career 'SKATER.P')) -eq 'keep-save') 'Release changed save'
+    @{files=$files} | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $root 'payload.json')
     Set-Content -LiteralPath (Join-Path $payload 'HOPE.exe') 'corrupt'
     $beforeCorrupt = (Get-FileHash -LiteralPath (Join-Path $target 'HOPE.exe')).Hash
     $failed = $false; try { & $updater -Target $target } catch { $failed=$true }

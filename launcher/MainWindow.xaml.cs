@@ -26,6 +26,8 @@ public partial class MainWindow : Window, IDisposable
     private bool lastRunning;
     private bool loadingCareers;
     private bool importingDlc;
+    private bool updating;
+    private HopeRelease? availableUpdate;
     private readonly List<GraphicsOption> worldGraphics = AdvancedGraphics.World();
     private readonly List<GraphicsOption> nativeGraphics = AdvancedGraphics.Native();
 
@@ -107,6 +109,47 @@ public partial class MainWindow : Window, IDisposable
 
     private void Navigate_Click(object sender, RoutedEventArgs e) => Run(() => Navigate((string)((Button)sender).Tag));
     private void Quit_Click(object sender, RoutedEventArgs e) => Close();
+    private async void CheckUpdate_Click(object sender, RoutedEventArgs e)
+    {
+        if (updating) return;
+        updating = true;
+        availableUpdate = null;
+        RefreshStatus();
+        try {
+            var resultPath = Path.Combine(state.BundleRoot, "hope-update-result.json");
+            if (File.Exists(resultPath)) {
+                using var result = JsonDocument.Parse(File.ReadAllText(resultPath));
+                UpdateStatus.Text = result.RootElement.GetProperty("message").GetString();
+                Feedback.Text = UpdateStatus.Text;
+                File.Delete(resultPath);
+            }
+        } catch (Exception) { UpdateStatus.Text = "Check for updates to try again."; }
+        UpdateStatus.Text = "Checking for updates…";
+        try {
+            var release = await LauncherUpdates.CheckAsync();
+            if (release.Version > LauncherUpdates.Installed) {
+                availableUpdate = release;
+                UpdateStatus.Text = $"HOPE {release.Version} is available. Download and install when you're ready.";
+            } else UpdateStatus.Text = $"You're up to date. Installed: HOPE {LauncherUpdates.Installed.ToString(3)}.";
+        } catch (Exception error) { UpdateStatus.Text = "Couldn't check for updates: " + error.Message; }
+        finally { updating = false; RefreshStatus(); }
+    }
+
+    private async void InstallUpdate_Click(object sender, RoutedEventArgs e)
+    {
+        if (updating || availableUpdate == null) return;
+        if (state.IsGameRunning()) { UpdateStatus.Text = "Finish saving and close Skate 3 before updating."; return; }
+        updating = true;
+        RefreshStatus();
+        try {
+            var stage = await LauncherUpdates.PrepareAsync(availableUpdate,
+                new Progress<string>(message => UpdateStatus.Text = message));
+            if (state.IsGameRunning()) throw new IOException("Close Skate 3, then try the update again.");
+            LauncherUpdates.StartInstaller(stage, state.BundleRoot);
+            Application.Current.Shutdown();
+        } catch (Exception error) { UpdateStatus.Text = "Couldn't install the update: " + error.Message; }
+        finally { updating = false; RefreshStatus(); }
+    }
     private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
     private void Maximize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
     private void Window_KeyDown(object sender, KeyEventArgs e)
@@ -126,7 +169,9 @@ public partial class MainWindow : Window, IDisposable
             ReadyTitle.Text = running ? "Your session is running." : state.HasGame ? "Your next line is waiting." : "Start with your own Skate 3 ISO.";
             ReadyDetail.Text = state.GameFolderWarning ?? (state.HasGame ? "Game files installed • Your career stays with this copy" : "Choose your Xbox 360 ISO in Game setup.");
             PlayButton.Content = running ? "GAME IS RUNNING" : state.HasGame ? "LET’S SKATE  →" : "SET UP HOPE  →";
-            PlayButton.IsEnabled = !running && !importingDlc;
+            PlayButton.IsEnabled = !running && !importingDlc && !updating;
+            CheckUpdateButton.IsEnabled = !updating;
+            InstallUpdateButton.IsEnabled = !running && !updating && availableUpdate != null;
             CareerCombo.IsEnabled = !running && !importingDlc;
             NewCareerButton.IsEnabled = !running && !importingDlc && state.HasGame;
             ImportDlcButton.IsEnabled = !running && !importingDlc;

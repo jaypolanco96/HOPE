@@ -1,4 +1,4 @@
-param([string]$Target = (Join-Path (Split-Path $PSScriptRoot -Parent) 'HOPE'))
+param([string]$Target = (Join-Path (Split-Path $PSScriptRoot -Parent) 'HOPE'), [switch]$ReleasePackage)
 $ErrorActionPreference = 'Stop'
 if (Get-Process skate3 -ErrorAction SilentlyContinue) {
     throw 'Finish saving and close Skate 3 before installing this update.'
@@ -25,6 +25,16 @@ if (!(Test-Path -LiteralPath (Join-Path $Target 'portable.txt')) -or
 $payload = Join-Path $PSScriptRoot 'payload'
 $manifest = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'payload.json') -Raw | ConvertFrom-Json
 $allowed = @('skate3.exe','rexruntimerd.dll','HOPE.exe','HOPE.dll','HOPE.deps.json','HOPE.runtimeconfig.json','HOPE.pdb')
+if ($ReleasePackage) {
+    $required = @('skate3.exe','rexruntimerd.dll','HOPE.exe','HOPE.dll','HOPE.deps.json','HOPE.runtimeconfig.json')
+    $allowed = @($manifest.files.name)
+    foreach ($name in $allowed) {
+        if ($name -notmatch '^(?:[A-Za-z0-9_.-]+\.(?:dll|exe|pdb)|HOPE\.(?:deps|runtimeconfig)\.json|[a-z]{2}(?:-[A-Za-z]{2,4})?/[A-Za-z0-9_.-]+\.resources\.dll)$') {
+            throw 'Unexpected release payload filename.'
+        }
+    }
+    foreach ($name in $required) { if ($allowed -notcontains $name) { throw 'Incomplete release payload.' } }
+}
 foreach ($file in $manifest.files) {
     if ($allowed -notcontains $file.name) { throw 'Unexpected payload filename.' }
     $path = Join-Path $payload $file.name
@@ -55,6 +65,7 @@ foreach ($root in $roots) {
     foreach ($name in $names) {
         $path = Join-Path $root $name
         Assert-OrdinaryPath $path
+        if ($ReleasePackage) { New-Item -ItemType Directory -Path (Split-Path $path -Parent) -Force | Out-Null }
         $operations += [pscustomobject]@{ path=$path; name=$name; existed=(Test-Path -LiteralPath $path); backup=''; stream=$null; originalHash='' }
     }
 }
@@ -80,7 +91,7 @@ try {
     New-Item -ItemType Directory -Path $backup | Out-Null
     for ($i=0; $i -lt $operations.Count; $i++) {
         $operation = $operations[$i]
-        $operation.backup = Join-Path $backup ($i.ToString() + '-' + $operation.name)
+        $operation.backup = Join-Path $backup ($i.ToString() + '-' + ($operation.name -replace '/', '_'))
         if ($operation.existed) {
             $operation.originalHash = Hash-Stream $operation.stream
             $operation.stream.Position = 0

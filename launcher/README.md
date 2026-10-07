@@ -48,6 +48,11 @@ Phase 3 adds Help & recovery, reversible selected-career settings reset/restore,
 
 PC controls correction: Start opens the original Skate 3 menu. Escape or RB + Start opens HOPE settings. Return to HOPE Launcher closes the session; actual Skate 3 title-screen return remains unimplemented. See ../pc-gameplay-menu/README.md and ACTUAL-MENU-INVESTIGATION.md.
 
-Phase 4 starts with optional F8 timing captures and Open performance captures in Help. Captures are bounded and do not run in normal play until enabled. Python 3 is needed only for the separate analysis script, not for playing/capturing. See ../phase4/README.md for instructions and the guest-cadence measurement limits.
+Help & recovery includes Check for updates and Download & install. The launcher
+checks public Windows releases, verifies the archive checksum, preserves user
+data and restarts to install program files with rollback backups. See
+[launcher updates](../docs/LAUNCHER-UPDATES.md). Phase labels and timing-capture
+controls are removed from the player interface; the optional F8 recorder
+remains available in the native game for troubleshooting.
 
 Current graphics, mods and known issues are summarized in [current status](../docs/CURRENT-STATUS.md). The particle/clothing hotfix still needs movement retesting. See [changelog](../CHANGELOG.md).

@@ -1,9 +1,10 @@
 # Current HOPE status
 
-Updated October 6, 2026. Launcher 0.6.5 is installed with native game
-2.0.0.41-dev.ge7ca86e. Game behavior source: e7ca86e. SDK behavior source:
-a459a73. Launcher icon source: 7c0a937. Later documentation commits do not
-change those installed program versions.
+Updated October 7, 2026. Launcher 0.6.6 is installed with native game
+2.0.0.51-dev.g7a603df and the texture-descriptor correction described below.
+These local builds include working-tree changes beyond their embedded base
+commit identifiers. Launcher icon source: 7c0a937. The published 0.6.5
+release packages do not yet contain these later local fixes.
 
 The [0.6.5 Community Preview](https://github.com/jaypolanco96/HOPE/releases/tag/hope-v0.6.5-preview.1)
 provides Windows x64 launcher/game and experimental Linux x64/macOS arm64
@@ -75,3 +76,15 @@ bounds packet-tail reads; 6,932 guarded reference reads passed. A separate
 invalid guest-function call remains unresolved and has additional caller
 diagnostics. See [audio crash investigation](AUDIO-BOUNDS-FIX.md). Live soak
 testing and updated release packages remain outstanding.
+
+The October 7 texture assertion (`!fetch.stacked`, `info.cpp:45`) is handled
+by rejecting invalid texture shape combinations through the parser's existing
+failure result. A compiled regression covers 64 descriptor combinations;
+live visual/gameplay retesting remains required. See
+[texture assertion correction](TEXTURE-FETCH-FIX.md).
+
+Launcher 0.6.6 removes phase/development copy and capture controls from the
+player interface, and adds checksum-verified public-release updates under
+Help & recovery. Validation passed 178 launcher fixtures and 35 installer
+checks, plus an offline layout review. See [launcher updates](LAUNCHER-UPDATES.md)
+for release requirements and the remaining live self-update validation.

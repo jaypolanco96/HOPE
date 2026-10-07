@@ -148,6 +148,7 @@ internal static class SelfTests
             QoLTests.Run(Path.Combine(root, "qol"), Check);
             DlcTests.Run(Path.Combine(root, "dlc-tests"), Check, linkFixture);
             BugfixTests.Run(Path.Combine(root, "bugfix-tests"), Check);
+            UpdateTests.Run(Path.Combine(root, "update-tests"), Check);
             return $"Passed {checks} HOPE launcher fixture checks. No game was launched; no real saves were modified.\n";
         }
         finally

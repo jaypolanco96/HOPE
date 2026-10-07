@@ -45,7 +45,6 @@
        <Border Background="#D918172A" BorderBrush="#8275FFE1" BorderThickness="1" CornerRadius="15" Padding="14,9">
         <TextBlock x:Name="StatusBadge" Text="●  READY TO ROLL" Foreground="{StaticResource Mint}" FontSize="12" FontWeight="Bold"/>
        </Border>
-       <TextBlock Text="PHASE 4 / PERFORMANCE" Foreground="#D5CDEC" FontSize="11" VerticalAlignment="Center" Margin="16,0,0,22"/>
       </StackPanel>
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" shell:WindowChrome.IsHitTestVisibleInChrome="True">
        <Button Content="—" Width="42" Padding="0,8" Margin="0,0,8,0" Click="Minimize_Click" AutomationProperties.Name="Minimize launcher"/>
@@ -128,7 +127,7 @@
           </StackPanel></Border>
           <Border x:Name="AdvancedNativePanel" CornerRadius="18" BorderBrush="#786397" BorderThickness="1" Padding="18" Margin="0,0,0,18"><StackPanel>
            <TextBlock Text="ADVANCED NATIVE GRAPHICS" Foreground="{StaticResource Mint}" FontWeight="Bold" FontSize="21"/>
-           <TextBlock Text="These controls require the Native renderer. Raise quality gradually and compare performance. Experimental options start off and still need play testing." TextWrapping="Wrap" Foreground="#C8BED9" Margin="0,8,0,12"/>
+           <TextBlock Text="These controls require the Native renderer. Raise quality gradually and compare performance. Some effects may affect image quality." TextWrapping="Wrap" Foreground="#C8BED9" Margin="0,8,0,12"/>
            <ItemsControl x:Name="NativeGraphicsOptions" ItemTemplate="{StaticResource GraphicsOptionTemplate}"/>
           </StackPanel></Border>
           <Border CornerRadius="18" Background="#30243F" Padding="18" Margin="0,0,0,18"><StackPanel>
@@ -180,9 +179,10 @@
           <TextBlock Text="GET BACK TO YOUR LINE." Foreground="{StaticResource Mint}" FontSize="22" FontWeight="Bold"/>
           <TextBlock Text="Start opens Skate 3's menu: Restart, Trick Book, map and replay. Escape or RB + Start opens HOPE settings. Return to HOPE Launcher closes the session; it does not return to Skate 3's title screen. Finish saving first." TextWrapping="Wrap" Foreground="#C8BED9" Margin="0,8,0,12"/>
           <TextBlock x:Name="ControllerStatus" Text="Controller: waiting for an XInput device" Foreground="{StaticResource Mint}" Margin="0,0,0,8"/>
-          <TextBlock Text="Check smoothness" FontSize="24" FontWeight="Bold"/>
-          <TextBlock Text="Press F8 in game to start a 60-second capture. Press F8 again to save it, or quit normally. Capturing is optional. The game log reports the file location if you use a custom cache folder." TextWrapping="Wrap" Foreground="#C8BED9" Margin="0,8,0,10"/>
-          <Button Content="Open performance captures" Click="OpenCaptures_Click" HorizontalAlignment="Left" Margin="0,0,0,16"/>
+          <TextBlock Text="Keep HOPE up to date" FontSize="24" FontWeight="Bold"/>
+          <TextBlock Text="Download and install updates here. Your game files, careers, saves, mods and settings stay in place. Close Skate 3 before updating; HOPE restarts to finish installation." TextWrapping="Wrap" Foreground="#C8BED9" Margin="0,8,0,10"/>
+          <TextBlock x:Name="UpdateStatus" Text="Check for the latest HOPE release." Foreground="{StaticResource Mint}" TextWrapping="Wrap" Margin="0,0,0,10"/>
+          <WrapPanel><Button x:Name="CheckUpdateButton" Content="Check for updates" Click="CheckUpdate_Click" Margin="0,0,12,12"/><Button x:Name="InstallUpdateButton" Content="Download &amp; install" Click="InstallUpdate_Click" IsEnabled="False" Margin="0,0,0,12"/></WrapPanel>
           <TextBlock Text="Recover game settings" FontSize="24" FontWeight="Bold"/>
           <TextBlock Text="Reset only the selected career's game settings. Its career saves, profiles, supplied game path, ISO choice and other careers stay intact. Current settings are moved to a backup. Changes apply next launch. Close the game first." TextWrapping="Wrap" Foreground="#C8BED9" Margin="0,8,0,10"/>
           <Button x:Name="ResetSettingsButton" Content="Reset game settings…" Foreground="{StaticResource Pink}" HorizontalAlignment="Left" Click="ResetSettings_Click"/>
@@ -190,7 +190,7 @@
           <ComboBox x:Name="BackupCombo" AutomationProperties.Name="Settings backup"/>
           <TextBlock x:Name="BackupStatus" Text="No settings backups yet. Resetting settings creates one." Foreground="{StaticResource Mint}" FontSize="14" Margin="0,8,0,14" Visibility="Collapsed"/>
           <WrapPanel><Button x:Name="RestoreSettingsButton" Content="Restore selected backup" Click="RestoreSettings_Click" Margin="0,0,12,10"/><Button Content="Open career folder" Click="OpenCareer_Click"/></WrapPanel>
-          <TextBlock Text="Current settings are backed up before restoration. A backup may contain the original problem; reset again or choose an earlier backup if needed. Hardware performance presets will follow measured testing." TextWrapping="Wrap" Foreground="#C8BED9" FontSize="14"/>
+          <TextBlock Text="Current settings are backed up before restoration. A backup may contain the original problem; reset again or choose an earlier backup if needed. " TextWrapping="Wrap" Foreground="#C8BED9" FontSize="14"/>
          </StackPanel>
          <StackPanel x:Name="CreditsPanel" Visibility="Collapsed">
           <TextBlock Text="ORIGINAL RECOMPILATION" Foreground="{StaticResource Pink}" FontWeight="Bold" FontSize="14"/>
